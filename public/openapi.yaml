@@ -1,0 +1,753 @@
+openapi: 3.0.3
+info:
+  title: Mini Shop API
+  version: 1.0.0
+  description: |
+    Next.js 미니 쇼핑몰 API 예시. Swagger UI에서 Try it out로 체험 가능.
+servers:
+  - url: http://localhost:3000
+    description: local
+
+tags:
+  - name: Auth
+  - name: Users
+  - name: Products
+  - name: Cart
+  - name: Orders
+  - name: Admin
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    ErrorResponse:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          example: PRODUCT_NOT_FOUND
+        message:
+          type: string
+          example: Product not found.
+        details:
+          type: object
+          additionalProperties: true
+
+    PaginationMeta:
+      type: object
+      required: [page, limit, total]
+      properties:
+        page:
+          type: integer
+          minimum: 1
+          example: 1
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 100
+          example: 20
+        total:
+          type: integer
+          minimum: 0
+          example: 135
+
+    Money:
+      type: object
+      required: [amount, currency]
+      properties:
+        amount:
+          type: integer
+          description: "소수점 없는 최소 단위(예: KRW는 원 단위)"
+          example: 19900
+        currency:
+          type: string
+          example: KRW
+
+    Product:
+      type: object
+      required: [id, name, price, status, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+          example: "prod_01HZX3B8G2K7N6D9A1"
+        name:
+          type: string
+          example: "오프화이트 티셔츠"
+        description:
+          type: string
+          example: "면 100%, 오버핏"
+        thumbnailUrl:
+          type: string
+          example: "https://cdn.example.com/p/1.jpg"
+        images:
+          type: array
+          items:
+            type: string
+          example: ["https://cdn.example.com/p/1.jpg", "https://cdn.example.com/p/2.jpg"]
+        price:
+          $ref: "#/components/schemas/Money"
+        compareAtPrice:
+          allOf:
+            - $ref: "#/components/schemas/Money"
+          nullable: true
+        category:
+          type: string
+          example: "tops"
+        tags:
+          type: array
+          items:
+            type: string
+          example: ["new", "popular"]
+        stock:
+          type: integer
+          minimum: 0
+          example: 32
+        status:
+          type: string
+          enum: [ACTIVE, INACTIVE, SOLD_OUT]
+          example: ACTIVE
+        createdAt:
+          type: string
+          format: date-time
+          example: "2026-02-21T00:00:00.000Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2026-02-21T00:00:00.000Z"
+
+    ProductListResponse:
+      type: object
+      required: [items, meta]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Product"
+        meta:
+          $ref: "#/components/schemas/PaginationMeta"
+
+    User:
+      type: object
+      required: [id, email, role]
+      properties:
+        id:
+          type: string
+          example: "user_01HZX3Q1Y9J7B8X2"
+        email:
+          type: string
+          format: email
+          example: "dev@example.com"
+        name:
+          type: string
+          example: "Dev"
+        role:
+          type: string
+          enum: [USER, ADMIN]
+          example: USER
+
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          example: "dev@example.com"
+        password:
+          type: string
+          format: password
+          example: "password1234"
+
+    LoginResponse:
+      type: object
+      required: [accessToken, user]
+      properties:
+        accessToken:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI..."
+        user:
+          $ref: "#/components/schemas/User"
+
+    CartItem:
+      type: object
+      required: [itemId, productId, name, price, quantity, lineTotal]
+      properties:
+        itemId:
+          type: string
+          example: "cartitem_01HZX4..."
+        productId:
+          type: string
+          example: "prod_01HZX3B8G2K7N6D9A1"
+        name:
+          type: string
+          example: "오프화이트 티셔츠"
+        price:
+          $ref: "#/components/schemas/Money"
+        quantity:
+          type: integer
+          minimum: 1
+          maximum: 99
+          example: 2
+        lineTotal:
+          $ref: "#/components/schemas/Money"
+
+    Cart:
+      type: object
+      required: [id, items, subtotal, updatedAt]
+      properties:
+        id:
+          type: string
+          example: "cart_01HZX4..."
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/CartItem"
+        subtotal:
+          $ref: "#/components/schemas/Money"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2026-02-21T00:00:00.000Z"
+
+    AddToCartRequest:
+      type: object
+      required: [productId, quantity]
+      properties:
+        productId:
+          type: string
+          example: "prod_01HZX3B8G2K7N6D9A1"
+        quantity:
+          type: integer
+          minimum: 1
+          maximum: 99
+          example: 1
+
+    UpdateCartItemRequest:
+      type: object
+      required: [quantity]
+      properties:
+        quantity:
+          type: integer
+          minimum: 1
+          maximum: 99
+          example: 3
+
+    ShippingAddress:
+      type: object
+      required: [name, phone, address1, city, postalCode]
+      properties:
+        name:
+          type: string
+          example: "홍길동"
+        phone:
+          type: string
+          example: "010-1234-5678"
+        address1:
+          type: string
+          example: "서울시 강남구 테헤란로 123"
+        address2:
+          type: string
+          example: "101호"
+        city:
+          type: string
+          example: "서울"
+        postalCode:
+          type: string
+          example: "06236"
+
+    Order:
+      type: object
+      required: [id, status, items, subtotal, createdAt]
+      properties:
+        id:
+          type: string
+          example: "ord_01HZX5..."
+        status:
+          type: string
+          enum: [PENDING, PAID, CANCELED]
+          example: PENDING
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/CartItem"
+        subtotal:
+          $ref: "#/components/schemas/Money"
+        shippingAddress:
+          $ref: "#/components/schemas/ShippingAddress"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2026-02-21T00:00:00.000Z"
+
+    CreateOrderRequest:
+      type: object
+      required: [cartId, shippingAddress]
+      properties:
+        cartId:
+          type: string
+          example: "cart_01HZX4..."
+        shippingAddress:
+          $ref: "#/components/schemas/ShippingAddress"
+        note:
+          type: string
+          example: "문 앞에 놓아주세요"
+
+    CreateOrderResponse:
+      type: object
+      required: [order]
+      properties:
+        order:
+          $ref: "#/components/schemas/Order"
+
+    CreateProductRequest:
+      type: object
+      required: [name, price, category, stock, status]
+      properties:
+        name:
+          type: string
+          example: "오프화이트 티셔츠"
+        description:
+          type: string
+          example: "면 100%, 오버핏"
+        thumbnailUrl:
+          type: string
+          example: "https://cdn.example.com/p/1.jpg"
+        images:
+          type: array
+          items:
+            type: string
+        price:
+          $ref: "#/components/schemas/Money"
+        compareAtPrice:
+          allOf:
+            - $ref: "#/components/schemas/Money"
+          nullable: true
+        category:
+          type: string
+          example: "tops"
+        tags:
+          type: array
+          items:
+            type: string
+        stock:
+          type: integer
+          minimum: 0
+          example: 50
+        status:
+          type: string
+          enum: [ACTIVE, INACTIVE, SOLD_OUT]
+          example: ACTIVE
+
+    UpdateProductRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        thumbnailUrl:
+          type: string
+        images:
+          type: array
+          items:
+            type: string
+        price:
+          $ref: "#/components/schemas/Money"
+        compareAtPrice:
+          allOf:
+            - $ref: "#/components/schemas/Money"
+          nullable: true
+        category:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        stock:
+          type: integer
+          minimum: 0
+        status:
+          type: string
+          enum: [ACTIVE, INACTIVE, SOLD_OUT]
+
+paths:
+  /api/health:
+    get:
+      summary: Health check
+      responses:
+        "200":
+          description: ok
+
+  /api/auth/login:
+    post:
+      tags: [Auth]
+      summary: Login (returns JWT access token)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: logged in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        "401":
+          description: invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/me:
+    get:
+      tags: [Users]
+      summary: Get current user
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/products:
+    get:
+      tags: [Products]
+      summary: List products
+      parameters:
+        - in: query
+          name: q
+          schema:
+            type: string
+          description: search keyword
+        - in: query
+          name: category
+          schema:
+            type: string
+          example: tops
+        - in: query
+          name: sort
+          schema:
+            type: string
+            enum: [createdAt_desc, createdAt_asc, price_desc, price_asc]
+          example: createdAt_desc
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        "200":
+          description: list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductListResponse"
+
+  /api/products/{id}:
+    get:
+      tags: [Products]
+      summary: Get product detail
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: product
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+        "404":
+          description: not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/cart:
+    get:
+      tags: [Cart]
+      summary: Get current cart
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: cart
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cart"
+        "401":
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    post:
+      tags: [Cart]
+      summary: Add item to cart
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddToCartRequest"
+      responses:
+        "200":
+          description: updated cart
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cart"
+        "409":
+          description: stock conflict (e.g., insufficient stock)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/cart/items/{itemId}:
+    patch:
+      tags: [Cart]
+      summary: Update cart item quantity
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: itemId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCartItemRequest"
+      responses:
+        "200":
+          description: updated cart
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cart"
+        "404":
+          description: item not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    delete:
+      tags: [Cart]
+      summary: Remove cart item
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: itemId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: updated cart
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cart"
+        "404":
+          description: item not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/orders:
+    get:
+      tags: [Orders]
+      summary: List my orders
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        "200":
+          description: list orders
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, meta]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Order"
+                  meta:
+                    $ref: "#/components/schemas/PaginationMeta"
+
+    post:
+      tags: [Orders]
+      summary: Create order from cart
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateOrderRequest"
+      responses:
+        "201":
+          description: created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateOrderResponse"
+        "409":
+          description: stock conflict / price changed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/orders/{orderId}:
+    get:
+      tags: [Orders]
+      summary: Get order detail
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: orderId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: order
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+        "404":
+          description: not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/admin/products:
+    post:
+      tags: [Admin]
+      summary: Create product (admin)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateProductRequest"
+      responses:
+        "201":
+          description: created product
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+        "403":
+          description: forbidden (not admin)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/admin/products/{id}:
+    patch:
+      tags: [Admin]
+      summary: Update product (admin)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateProductRequest"
+      responses:
+        "200":
+          description: updated product
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+        "403":
+          description: forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
