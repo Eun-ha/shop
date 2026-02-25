@@ -8,12 +8,13 @@ export async function PATCH(req: Request, ctx: { params: { itemId: string } }) {
   const auth = requireAuth(req);
   if (!auth) return fail("UNAUTHORIZED", "Unauthorized", 401);
 
+  const params = await ctx.params;
   const body = await parseJson<PatchBody>(req).catch(() => null);
   const qty = body?.quantity;
   if (!qty) return fail("INVALID_REQUEST", "quantity is required", 400);
 
   const cart = getOrCreateCart(auth.sub);
-  const item = cart.items.find((it) => it.itemId === ctx.params.itemId);
+  const item = cart.items.find((it) => it.itemId === params.itemId);
   if (!item) return fail("CART_ITEM_NOT_FOUND", "Cart item not found.", 404);
 
   const p = products.get(item.productId);
@@ -35,8 +36,9 @@ export async function DELETE(req: Request, ctx: { params: { itemId: string } }) 
   const auth = requireAuth(req);
   if (!auth) return fail("UNAUTHORIZED", "Unauthorized", 401);
 
+  const params = await ctx.params;
   const cart = getOrCreateCart(auth.sub);
-  const idx = cart.items.findIndex((it) => it.itemId === ctx.params.itemId);
+  const idx = cart.items.findIndex((it) => it.itemId === params.itemId);
   if (idx === -1) return fail("CART_ITEM_NOT_FOUND", "Cart item not found.", 404);
 
   cart.items.splice(idx, 1);

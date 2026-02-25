@@ -10,7 +10,8 @@ export async function PATCH(req: Request, ctx: { params: { id: string } }) {
   if (!auth) return fail("UNAUTHORIZED", "Unauthorized", 401);
   if (auth.role !== "ADMIN") return fail("FORBIDDEN", "Forbidden", 403);
 
-  const existing = products.get(ctx.params.id);
+  const params = await ctx.params;
+  const existing = products.get(params.id);
   if (!existing) return fail("PRODUCT_NOT_FOUND", "Product not found.", 404);
 
   const body = await parseJson<PatchBody>(req).catch(() => null);

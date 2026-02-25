@@ -1,3 +1,5 @@
+// lib/mock-db.ts
+
 export type Role = "USER" | "ADMIN";
 
 export type Money = { amount: number; currency: "KRW" };
@@ -59,21 +61,49 @@ export type Order = {
   createdAt: string;
 };
 
-// ===== Mock storage (in-memory) =====
+// ===== Helpers =====
 const nowIso = () => new Date().toISOString();
 const KRW = (amount: number): Money => ({ amount, currency: "KRW" });
 
-export const users = new Map<string, { user: User; password: string }>();
-export const products = new Map<string, Product>();
-export const carts = new Map<string, Cart>(); // key: userId
-export const orders = new Map<string, Order>(); // key: orderId
+// ===== Global singleton storage (dev hot-reload safe) =====
+type MiniShopDB = {
+  users: Map<string, { user: User; password: string }>;
+  products: Map<string, Product>;
+  carts: Map<string, Cart>; // key: userId
+  orders: Map<string, Order>; // key: orderId
+  seeded: boolean;
+};
 
-// Seed
-(function seed() {
+declare global {
+  // eslint-disable-next-line no-var
+  var __miniShopDB: MiniShopDB | undefined;
+}
+
+const db: MiniShopDB =
+  globalThis.__miniShopDB ??
+  (globalThis.__miniShopDB = {
+    users: new Map<string, { user: User; password: string }>(),
+    products: new Map<string, Product>(),
+    carts: new Map<string, Cart>(),
+    orders: new Map<string, Order>(),
+    seeded: false,
+  });
+
+// Export shared maps
+export const users = db.users;
+export const products = db.products;
+export const carts = db.carts;
+export const orders = db.orders;
+
+// ===== Seed (run once) =====
+if (!db.seeded) {
+  db.seeded = true;
+
   users.set("dev@example.com", {
     password: "password1234",
     user: { id: "user_01", email: "dev@example.com", name: "Dev", role: "USER" },
   });
+
   users.set("admin@example.com", {
     password: "password1234",
     user: { id: "user_admin", email: "admin@example.com", name: "Admin", role: "ADMIN" },
@@ -113,9 +143,9 @@ export const orders = new Map<string, Order>(); // key: orderId
 
   products.set(p1.id, p1);
   products.set(p2.id, p2);
-})();
+}
 
-// helpers
+// ===== helpers =====
 export function calcSubtotal(items: CartItem[]): Money {
   const sum = items.reduce((acc, it) => acc + it.lineTotal.amount, 0);
   return KRW(sum);
@@ -124,7 +154,15 @@ export function calcSubtotal(items: CartItem[]): Money {
 export function getOrCreateCart(userId: string): Cart {
   const existing = carts.get(userId);
   if (existing) return existing;
-  const cart: Cart = { id: `cart_${userId}`, userId, items: [], subtotal: KRW(0), updatedAt: nowIso() };
+
+  const cart: Cart = {
+    id: `cart_${userId}`,
+    userId,
+    items: [],
+    subtotal: KRW(0),
+    updatedAt: nowIso(),
+  };
+
   carts.set(userId, cart);
   return cart;
 }

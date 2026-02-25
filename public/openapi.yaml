@@ -15,6 +15,7 @@ tags:
   - name: Cart
   - name: Orders
   - name: Admin
+  - name: Checkout
 
 components:
   securitySchemes:
@@ -375,6 +376,33 @@ components:
           type: string
           enum: [ACTIVE, INACTIVE, SOLD_OUT]
 
+    CheckoutItem:
+      type: object
+      required: [productId, quantity]
+      properties:
+        productId:
+          type: string
+          example: "prod_01"
+        quantity:
+          type: integer
+          minimum: 1
+          maximum: 99
+          example: 1
+
+    CheckoutRequest:
+      type: object
+      required: [items, shippingAddress]
+      properties:
+        items:
+          type: array
+          minItems: 1
+          items:
+            $ref: "#/components/schemas/CheckoutItem"
+        shippingAddress:
+          $ref: "#/components/schemas/ShippingAddress"
+        note:
+          type: string
+          example: "문 앞에 놓아주세요"
 paths:
   /api/health:
     get:
@@ -747,6 +775,38 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
         "404":
           description: not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/checkout:
+    post:
+      tags: [Checkout]
+      summary: Instant checkout (create order without cart)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CheckoutRequest"
+      responses:
+        "201":
+          description: created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateOrderResponse"
+        "409":
+          description: stock conflict / price changed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: unauthorized
           content:
             application/json:
               schema:
