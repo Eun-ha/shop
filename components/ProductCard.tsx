@@ -16,6 +16,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           width={300}
           height={300}
           className="rounded-md object-cover w-full h-60 bg-zinc-100"
+          unoptimized
         />
         <div className="flex flex-col gap-1 mt-2">
           <span className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">

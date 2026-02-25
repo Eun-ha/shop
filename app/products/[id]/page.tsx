@@ -17,7 +17,8 @@ interface ProductDetailPageProps {
 }
 
 export default async function ProductDetailPage({ params }: ProductDetailPageProps) {
-  const product = await fetchProduct(params.id);
+  const resolvedParams = await params;
+  const product = await fetchProduct(resolvedParams.id);
   if (!product) {
     return <div className="max-w-2xl mx-auto py-16 text-center text-zinc-500">상품을 찾을 수 없습니다.</div>;
   }
@@ -31,6 +32,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
             width={500}
             height={500}
             className="rounded-lg object-cover w-full h-96 bg-zinc-100"
+            unoptimized
           />
           <div className="flex gap-2 mt-2">
             {product.images?.map((img, i) => (
@@ -41,6 +43,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
                 width={80}
                 height={80}
                 className="rounded border object-cover w-20 h-20 bg-zinc-100"
+                unoptimized
               />
             ))}
           </div>
