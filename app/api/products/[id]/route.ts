@@ -1,7 +1,7 @@
 import { ok, fail } from "@/lib/http";
 import { products } from "@/lib/mock-db";
 
-export async function GET(_req: Request, ctx: { params: { id: string } }) {
+export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> }) {
   
   const params = await ctx.params;
   

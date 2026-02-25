@@ -4,7 +4,7 @@ import { getOrCreateCart, products, calcSubtotal } from "@/lib/mock-db";
 
 type PatchBody = { quantity: number };
 
-export async function PATCH(req: Request, ctx: { params: { itemId: string } }) {
+export async function PATCH(req: Request, ctx: { params: Promise<{ itemId: string }> }) {
   const auth = requireAuth(req);
   if (!auth) return fail("UNAUTHORIZED", "Unauthorized", 401);
 
@@ -32,7 +32,7 @@ export async function PATCH(req: Request, ctx: { params: { itemId: string } }) {
   return ok(cart);
 }
 
-export async function DELETE(req: Request, ctx: { params: { itemId: string } }) {
+export async function DELETE(req: Request, ctx: { params: Promise<{ itemId: string }> }) {
   const auth = requireAuth(req);
   if (!auth) return fail("UNAUTHORIZED", "Unauthorized", 401);
 

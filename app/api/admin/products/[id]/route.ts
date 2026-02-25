@@ -5,7 +5,7 @@ import type { Product } from "@/lib/mock-db";
 
 type PatchBody = Partial<Omit<Product, "id" | "createdAt" | "updatedAt">>;
 
-export async function PATCH(req: Request, ctx: { params: { id: string } }) {
+export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }> }) {
   const auth = requireAuth(req);
   if (!auth) return fail("UNAUTHORIZED", "Unauthorized", 401);
   if (auth.role !== "ADMIN") return fail("FORBIDDEN", "Forbidden", 403);

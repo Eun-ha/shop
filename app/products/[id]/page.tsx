@@ -1,8 +1,13 @@
 import type { Product } from "@/lib/mock-db";
 import Image from "next/image";
 
+
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+
 async function fetchProduct(id: string): Promise<Product | null> {
-  const res = await fetch(`/api/products/${id}`, { cache: "no-store" });
+  const url = `${API_BASE_URL}/api/products/${id}`;
+  const res = await fetch(url, { cache: "no-store" });
   if (!res.ok) return null;
   return res.json();
 }

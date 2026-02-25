@@ -1,8 +1,13 @@
 import ProductCard from "@/components/ProductCard";
 import type { Product } from "@/lib/mock-db";
 
+
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+
 async function fetchProducts(): Promise<Product[]> {
-  const res = await fetch("/api/products", { cache: "no-store" });
+  const url = `${API_BASE_URL}/api/products`;
+  const res = await fetch(url, { cache: "no-store" });
   if (!res.ok) return [];
   const data = await res.json();
   return data.items || [];
@@ -25,24 +30,5 @@ export default async function Home() {
         </div>
       </div>
     </main>
-            target="_blank"
-}
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/8 px-5 transition-colors hover:border-transparent hover:bg-black/4 dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-39.5"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
   );
 }

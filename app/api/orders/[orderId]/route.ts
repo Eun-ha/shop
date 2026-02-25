@@ -2,7 +2,7 @@ import { ok, fail } from "@/lib/http";
 import { requireAuth } from "@/lib/auth";
 import { orders } from "@/lib/mock-db";
 
-export async function GET(req: Request, ctx: { params: { orderId: string } }) {
+export async function GET(req: Request, ctx: { params: Promise<{ orderId: string }> }) {
   const auth = requireAuth(req);
   if (!auth) return fail("UNAUTHORIZED", "Unauthorized", 401);
 
