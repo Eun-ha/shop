@@ -85,15 +85,7 @@ export default function CheckoutPage() {
 
       if (res.ok) {
         setSuccess("주문이 완료되었습니다!");
-        setCart((prev) =>
-          prev
-            ? {
-                ...prev,
-                items: [],
-                subtotal: { ...prev.subtotal, amount: 0 },
-              }
-            : prev,
-        );
+        setCart(null);
       } else {
         const data = await res.json().catch(() => ({}));
         setError(data?.message || "주문 처리 중 오류가 발생했습니다.");
