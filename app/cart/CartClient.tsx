@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import type { Cart } from "@/lib/mock-db";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
 export default function CartClient() {
+  const router = useRouter();
   const [cart, setCart] = useState<Cart | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -64,7 +66,13 @@ export default function CartClient() {
         <div className="text-xl font-bold text-zinc-900 dark:text-zinc-50">총 합계: {cart.subtotal.amount.toLocaleString()}원</div>
       </div>
       <div className="flex justify-end mt-4">
-        <button className="px-8 py-3 rounded bg-blue-600 text-white font-semibold hover:bg-blue-700 transition">주문하기</button>
+        <button
+          type="button"
+          onClick={() => router.push("/checkout")}
+          className="px-8 py-3 rounded bg-blue-600 text-white font-semibold hover:bg-blue-700 transition"
+        >
+          주문하기
+        </button>
       </div>
     </main>
   );
