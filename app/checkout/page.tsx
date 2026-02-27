@@ -1,6 +1,7 @@
 "use client";
 import type { Cart, ShippingAddress } from "@/lib/mock-db";
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
@@ -71,24 +72,50 @@ export default function CheckoutPage() {
       items: cart.items.map((item) => ({ productId: item.productId, quantity: item.quantity })),
       shippingAddress: address,
     };
-    const res = await fetch(`${API_BASE_URL}/api/checkout`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(body),
-    });
-    if (res.ok) {
-      setSuccess("주문이 완료되었습니다!");
-      setCart(null);
-    } else {
-      const data = await res.json().catch(() => ({}));
-      setError(data?.message || "주문 처리 중 오류가 발생했습니다.");
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/checkout`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (res.ok) {
+        setSuccess("주문이 완료되었습니다!");
+        setCart((prev) =>
+          prev
+            ? {
+                ...prev,
+                items: [],
+                subtotal: { ...prev.subtotal, amount: 0 },
+              }
+            : prev,
+        );
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setError(data?.message || "주문 처리 중 오류가 발생했습니다.");
+      }
+    } catch {
+      setError("네트워크 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
+    } finally {
+      setSubmitting(false);
     }
-    setSubmitting(false);
   };
 
+  if (success) {
+    return (
+      <main className="max-w-2xl mx-auto py-16 px-4 text-center">
+        <h1 className="text-2xl font-bold mb-4 text-zinc-900 dark:text-zinc-50">주문 완료</h1>
+        <p className="text-green-600 mb-6">{success}</p>
+        <Link href="/" className="inline-block px-6 py-3 rounded bg-blue-600 text-white font-semibold hover:bg-blue-700 transition">
+          쇼핑 계속하기
+        </Link>
+      </main>
+    );
+  }
   if (loading) return <div className="py-16 text-center text-zinc-500">로딩 중...</div>;
   if (error && !cart) return <div className="max-w-2xl mx-auto py-16 text-center text-red-500">{error}</div>;
   if (!cart || cart.items.length === 0) {
