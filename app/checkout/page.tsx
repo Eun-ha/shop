@@ -1,6 +1,7 @@
 "use client";
 import type { Cart, ShippingAddress } from "@/lib/mock-db";
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
@@ -96,6 +97,17 @@ export default function CheckoutPage() {
     }
   };
 
+  if (success) {
+    return (
+      <main className="max-w-2xl mx-auto py-16 px-4 text-center">
+        <h1 className="text-2xl font-bold mb-4 text-zinc-900 dark:text-zinc-50">주문 완료</h1>
+        <p className="text-green-600 mb-6">{success}</p>
+        <Link href="/" className="inline-block px-6 py-3 rounded bg-blue-600 text-white font-semibold hover:bg-blue-700 transition">
+          쇼핑 계속하기
+        </Link>
+      </main>
+    );
+  }
   if (loading) return <div className="py-16 text-center text-zinc-500">로딩 중...</div>;
   if (error && !cart) return <div className="max-w-2xl mx-auto py-16 text-center text-red-500">{error}</div>;
   if (!cart || cart.items.length === 0) {
