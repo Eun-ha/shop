@@ -21,9 +21,25 @@ export default function CheckoutPage() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    fetch(`${API_BASE_URL}/api/cart`, { cache: "no-store" })
-      .then((res) => res.ok ? res.json() : null)
+    const token = localStorage.getItem("token");
+    if (!token) {
+      Promise.resolve().then(() => {
+        setError("로그인이 필요합니다.");
+        setLoading(false);
+      });
+      return;
+    }
+
+    fetch(`${API_BASE_URL}/api/cart`, {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: "no-store",
+    })
+      .then((res) => {
+        if (!res.ok) return Promise.reject(res);
+        return res.json();
+      })
       .then(setCart)
+      .catch(() => setError("장바구니를 불러올 수 없습니다."))
       .finally(() => setLoading(false));
   }, []);
 
@@ -35,6 +51,13 @@ export default function CheckoutPage() {
     e.preventDefault();
     setError("");
     setSuccess("");
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setError("로그인이 필요합니다.");
+      return;
+    }
+
     if (!cart || cart.items.length === 0) {
       setError("장바구니가 비어 있습니다.");
       return;
@@ -50,7 +73,10 @@ export default function CheckoutPage() {
     };
     const res = await fetch(`${API_BASE_URL}/api/checkout`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
       body: JSON.stringify(body),
     });
     if (res.ok) {
@@ -64,6 +90,7 @@ export default function CheckoutPage() {
   };
 
   if (loading) return <div className="py-16 text-center text-zinc-500">로딩 중...</div>;
+  if (error && !cart) return <div className="max-w-2xl mx-auto py-16 text-center text-red-500">{error}</div>;
   if (!cart || cart.items.length === 0) {
     return <div className="max-w-2xl mx-auto py-16 text-center text-zinc-500">장바구니가 비어 있습니다.</div>;
   }
@@ -78,7 +105,7 @@ export default function CheckoutPage() {
           {cart.items.map((item) => (
             <div key={item.itemId} className="flex gap-4 items-center border-b pb-4">
               <Image
-                src={item.productId.startsWith('prod_01') ? 'https://placehold.co/600x600' : 'https://placehold.co/600x600?3'}
+                src={item.productId.startsWith("prod_01") ? "https://placehold.co/600x600" : "https://placehold.co/600x600?3"}
                 alt={item.name}
                 width={60}
                 height={60}
@@ -87,7 +114,9 @@ export default function CheckoutPage() {
               />
               <div className="flex-1">
                 <div className="font-semibold text-zinc-900 dark:text-zinc-50">{item.name}</div>
-                <div className="text-zinc-500 text-sm">{item.price.amount.toLocaleString()}원 × {item.quantity}개</div>
+                <div className="text-zinc-500 text-sm">
+                  {item.price.amount.toLocaleString()}원 × {item.quantity}개
+                </div>
               </div>
               <div className="font-bold text-blue-600 min-w-[80px] text-right">{item.lineTotal.amount.toLocaleString()}원</div>
             </div>
