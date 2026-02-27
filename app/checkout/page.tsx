@@ -71,22 +71,29 @@ export default function CheckoutPage() {
       items: cart.items.map((item) => ({ productId: item.productId, quantity: item.quantity })),
       shippingAddress: address,
     };
-    const res = await fetch(`${API_BASE_URL}/api/checkout`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(body),
-    });
-    if (res.ok) {
-      setSuccess("주문이 완료되었습니다!");
-      setCart(null);
-    } else {
-      const data = await res.json().catch(() => ({}));
-      setError(data?.message || "주문 처리 중 오류가 발생했습니다.");
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/checkout`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (res.ok) {
+        setSuccess("주문이 완료되었습니다!");
+        setCart(null);
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setError(data?.message || "주문 처리 중 오류가 발생했습니다.");
+      }
+    } catch {
+      setError("네트워크 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
+    } finally {
+      setSubmitting(false);
     }
-    setSubmitting(false);
   };
 
   if (loading) return <div className="py-16 text-center text-zinc-500">로딩 중...</div>;
