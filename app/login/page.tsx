@@ -21,7 +21,7 @@ export default function LoginPage() {
     if (res.ok) {
       const data = await res.json();
       // JWT 토큰을 localStorage에 저장 (실서비스는 httpOnly 쿠키 권장)
-      localStorage.setItem("token", data.token);
+      localStorage.setItem("token", data.accessToken);
       window.location.href = "/";
     } else {
       const data = await res.json().catch(() => ({}));
