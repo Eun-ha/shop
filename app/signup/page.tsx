@@ -1,8 +1,6 @@
 "use client";
 import { useState } from "react";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
-
 export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -16,7 +14,7 @@ export default function SignupPage() {
     setError("");
     setSuccess("");
     setLoading(true);
-    const res = await fetch(`${API_BASE_URL}/api/auth/signup`, {
+    const res = await fetch("/api/auth/signup", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password, name }),
