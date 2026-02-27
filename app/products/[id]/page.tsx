@@ -1,7 +1,6 @@
 import type { Product } from "@/lib/mock-db";
 import Image from "next/image";
-
-
+import AddToCartButton from "./AddToCartButton";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
@@ -58,7 +57,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
             )}
           </div>
           <div className="text-sm text-zinc-500">재고: {product.stock}개</div>
-          <button className="mt-4 px-6 py-3 rounded bg-blue-600 text-white font-semibold hover:bg-blue-700 transition">장바구니 담기</button>
+          <AddToCartButton productId={product.id} />
         </div>
       </div>
     </main>
