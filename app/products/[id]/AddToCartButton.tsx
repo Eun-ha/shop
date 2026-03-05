@@ -47,7 +47,7 @@ export default function AddToCartButton({ productId }: AddToCartButtonProps) {
   };
 
   return (
-    <div className="mt-4">
+    <div>
       <button
         type="button"
         className="px-6 py-3 rounded bg-blue-600 text-white font-semibold hover:bg-blue-700 transition disabled:bg-blue-300"

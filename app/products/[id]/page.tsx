@@ -1,6 +1,7 @@
 import type { Product } from "@/lib/mock-db";
 import Image from "next/image";
 import AddToCartButton from "./AddToCartButton";
+import BuyNowButton from "./BuyNowButton";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
@@ -57,7 +58,10 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
             )}
           </div>
           <div className="text-sm text-zinc-500">재고: {product.stock}개</div>
-          <AddToCartButton productId={product.id} />
+          <div className="mt-4 flex flex-wrap gap-3">
+            <BuyNowButton productId={product.id} />
+            <AddToCartButton productId={product.id} />
+          </div>
         </div>
       </div>
     </main>
