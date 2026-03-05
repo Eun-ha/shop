@@ -3,6 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+
 interface BuyNowButtonProps {
   productId: string;
 }
@@ -10,33 +12,44 @@ interface BuyNowButtonProps {
 export default function BuyNowButton({ productId }: BuyNowButtonProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [quantity, setQuantity] = useState(1);
   const [message, setMessage] = useState("");
 
-  const handleBuyNow = () => {
+  const handleBuyNow = async () => {
     const token = localStorage.getItem("token");
     if (!token) {
       setMessage("로그인이 필요합니다.");
       return;
     }
 
-    const qty = Math.max(1, Math.min(99, Number(quantity || 1)));
     setLoading(true);
     setMessage("");
-    router.push(`/checkout?mode=buy-now&productId=${productId}&quantity=${qty}`);
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/cart`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ productId, quantity: 1 }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setMessage(data?.message || "바로구매를 시작할 수 없습니다.");
+        return;
+      }
+
+      router.push("/checkout");
+    } catch {
+      setMessage("네트워크 오류가 발생했습니다.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="flex items-center gap-2">
-      <input
-        type="number"
-        min={1}
-        max={99}
-        value={quantity}
-        onChange={(e) => setQuantity(Math.max(1, Math.min(99, Number(e.target.value || 1))))}
-        className="w-20 rounded border border-zinc-300 px-3 py-2 text-sm"
-        aria-label="바로구매 수량"
-      />
+    <div>
       <button
         type="button"
         className="px-6 py-3 rounded bg-zinc-900 text-white font-semibold hover:bg-zinc-700 transition disabled:bg-zinc-400"
