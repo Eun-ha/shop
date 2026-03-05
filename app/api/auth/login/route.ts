@@ -11,6 +11,7 @@ export async function POST(req: Request) {
   }
 
   const record = findUserByEmail(body.email);
+  
   if (!record || record.password !== body.password) {
     return fail("UNAUTHORIZED", "Invalid credentials", 401);
   }

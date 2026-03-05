@@ -22,13 +22,16 @@ export async function POST(req: Request) {
 
   // 1) items 검증 + 재고 체크
   const orderItems: CartItem[] = [];
+
   for (const it of body.items) {
     const qty = Math.max(1, Math.min(99, Number(it.quantity || 0)));
+    
     if (!it.productId || !qty) {
       return fail("INVALID_REQUEST", "Each item needs productId and quantity", 400);
     }
 
     const p = products.get(it.productId);
+
     if (!p) {
       return fail("PRODUCT_NOT_FOUND", "Product not found.", 404, { productId: it.productId });
     }
@@ -67,12 +70,12 @@ export async function POST(req: Request) {
 
   orders.set(orderId, order);
 
-  // (선택) 즉시구매 시점에 재고 차감을 하고 싶으면 아래 주석 해제
-  // for (const it of body.items) {
-  //   const p = products.get(it.productId)!;
-  //   p.stock -= Math.max(1, Math.min(99, Number(it.quantity || 0)));
-  //   p.updatedAt = new Date().toISOString();
-  // }
+  //(선택) 즉시구매 시점에 재고 차감을 하고 싶으면 아래 주석 해제
+  for (const it of body.items) {
+    const p = products.get(it.productId)!;
+    p.stock -= Math.max(1, Math.min(99, Number(it.quantity || 0)));
+    p.updatedAt = new Date().toISOString();
+  }
 
   return created({ order });
 }
