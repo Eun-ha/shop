@@ -1,18 +1,20 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
-interface AddToCartButtonProps {
+interface BuyNowButtonProps {
   productId: string;
 }
 
-export default function AddToCartButton({ productId }: AddToCartButtonProps) {
+export default function BuyNowButton({ productId }: BuyNowButtonProps) {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
-  const handleAddToCart = async () => {
+  const handleBuyNow = async () => {
     const token = localStorage.getItem("token");
     if (!token) {
       setMessage("로그인이 필요합니다.");
@@ -34,11 +36,11 @@ export default function AddToCartButton({ productId }: AddToCartButtonProps) {
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        setMessage(data?.message || "장바구니 담기에 실패했습니다.");
+        setMessage(data?.message || "바로구매를 시작할 수 없습니다.");
         return;
       }
 
-      setMessage("장바구니에 담았습니다.");
+      router.push("/checkout");
     } catch {
       setMessage("네트워크 오류가 발생했습니다.");
     } finally {
@@ -50,11 +52,11 @@ export default function AddToCartButton({ productId }: AddToCartButtonProps) {
     <div>
       <button
         type="button"
-        className="px-6 py-3 rounded bg-blue-600 text-white font-semibold hover:bg-blue-700 transition disabled:bg-blue-300"
-        onClick={handleAddToCart}
+        className="px-6 py-3 rounded bg-zinc-900 text-white font-semibold hover:bg-zinc-700 transition disabled:bg-zinc-400"
+        onClick={handleBuyNow}
         disabled={loading}
       >
-        {loading ? "담는 중..." : "장바구니 담기"}
+        {loading ? "이동 중..." : "바로구매"}
       </button>
       {message && <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-300">{message}</p>}
     </div>
