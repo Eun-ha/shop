@@ -1,5 +1,5 @@
 "use client";
-import type { Cart, ShippingAddress } from "@/lib/mock-db";
+import type { Cart, Order, ShippingAddress } from "@/lib/mock-db";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -19,6 +19,7 @@ export default function CheckoutPage() {
   });
   const [error, setError] = useState<string>("");
   const [success, setSuccess] = useState<string>("");
+  const [ordered, setOrdered] = useState<Order | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -84,6 +85,8 @@ export default function CheckoutPage() {
       });
 
       if (res.ok) {
+        const data = (await res.json()) as { order?: Order };
+        setOrdered(data.order || null);
         setSuccess("주문이 완료되었습니다!");
         setCart(null);
       } else {
@@ -99,9 +102,45 @@ export default function CheckoutPage() {
 
   if (success) {
     return (
-      <main className="max-w-2xl mx-auto py-16 px-4 text-center">
+      <main className="max-w-2xl mx-auto py-16 px-4">
         <h1 className="text-2xl font-bold mb-4 text-zinc-900 dark:text-zinc-50">주문 완료</h1>
         <p className="text-green-600 mb-6">{success}</p>
+
+        {ordered && (
+          <section className="rounded-lg border border-zinc-200 dark:border-zinc-700 p-5 mb-6 bg-white dark:bg-zinc-900">
+            <h2 className="text-lg font-semibold mb-4 text-zinc-900 dark:text-zinc-50">주문 요약</h2>
+            <div className="text-sm text-zinc-600 dark:text-zinc-300 mb-4 space-y-1">
+              <p>주문번호: {ordered.id}</p>
+              <p>주문상태: {ordered.status}</p>
+              <p>주문일시: {new Date(ordered.createdAt).toLocaleString()}</p>
+            </div>
+
+            <div className="space-y-2 mb-4">
+              {ordered.items.map((item) => (
+                <div key={item.itemId} className="flex items-center justify-between text-sm">
+                  <div className="text-zinc-700 dark:text-zinc-200">
+                    {item.name} · {item.quantity}개
+                  </div>
+                  <div className="font-semibold text-zinc-900 dark:text-zinc-50">{item.lineTotal.amount.toLocaleString()}원</div>
+                </div>
+              ))}
+            </div>
+
+            <div className="border-t border-zinc-200 dark:border-zinc-700 pt-3 text-sm text-zinc-700 dark:text-zinc-200 space-y-1 mb-4">
+              <p>
+                배송지: {ordered.shippingAddress.name} / {ordered.shippingAddress.phone}
+              </p>
+              <p>
+                주소: {ordered.shippingAddress.address1}
+                {ordered.shippingAddress.address2 ? ` ${ordered.shippingAddress.address2}` : ""}, {ordered.shippingAddress.city} (
+                {ordered.shippingAddress.postalCode})
+              </p>
+            </div>
+
+            <div className="text-right text-xl font-bold text-zinc-900 dark:text-zinc-50">총 합계: {ordered.subtotal.amount.toLocaleString()}원</div>
+          </section>
+        )}
+
         <Link href="/" className="inline-block px-6 py-3 rounded bg-blue-600 text-white font-semibold hover:bg-blue-700 transition">
           쇼핑 계속하기
         </Link>
