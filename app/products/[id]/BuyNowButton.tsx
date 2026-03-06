@@ -26,7 +26,7 @@ export default function BuyNowButton({ productId, quantity }: BuyNowButtonProps)
     setMessage("");
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/cart`, {
+      const res = await fetch(`${API_BASE_URL}/api/buy-now`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -41,7 +41,8 @@ export default function BuyNowButton({ productId, quantity }: BuyNowButtonProps)
         return;
       }
 
-      router.push("/checkout");
+      const data = (await res.json()) as { checkoutUrl?: string };
+      router.push(data.checkoutUrl || `/checkout?mode=buy-now&productId=${encodeURIComponent(productId)}&quantity=${quantity}`);
     } catch {
       setMessage("네트워크 오류가 발생했습니다.");
     } finally {
