@@ -7,9 +7,10 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
 
 interface BuyNowButtonProps {
   productId: string;
+  quantity: number;
 }
 
-export default function BuyNowButton({ productId }: BuyNowButtonProps) {
+export default function BuyNowButton({ productId, quantity }: BuyNowButtonProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -31,7 +32,7 @@ export default function BuyNowButton({ productId }: BuyNowButtonProps) {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ productId, quantity: 1 }),
+        body: JSON.stringify({ productId, quantity }),
       });
 
       if (!res.ok) {
