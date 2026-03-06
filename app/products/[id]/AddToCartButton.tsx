@@ -6,9 +6,10 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
 
 interface AddToCartButtonProps {
   productId: string;
+  quantity: number;
 }
 
-export default function AddToCartButton({ productId }: AddToCartButtonProps) {
+export default function AddToCartButton({ productId, quantity }: AddToCartButtonProps) {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -29,7 +30,7 @@ export default function AddToCartButton({ productId }: AddToCartButtonProps) {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ productId, quantity: 1 }),
+        body: JSON.stringify({ productId, quantity }),
       });
 
       if (!res.ok) {
