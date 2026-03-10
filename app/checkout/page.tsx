@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { useAuthStore } from "@/lib/stores/auth-store";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
@@ -15,6 +16,10 @@ export default function CheckoutPage() {
   const searchParams = useSearchParams();
   const isBuyNowMode = searchParams.get("mode") === "buy-now";
   const buyNowIntentId = searchParams.get("intentId") || "";
+
+  const token = useAuthStore((state) => state.token);
+  const initialized = useAuthStore((state) => state.initialized);
+  const initialize = useAuthStore((state) => state.initialize);
 
   const [cart, setCart] = useState<Cart | null>(null);
   const [buyNowItem, setBuyNowItem] = useState<CartItem | null>(null);
@@ -33,7 +38,11 @@ export default function CheckoutPage() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    initialize();
+  }, [initialize]);
+
+  useEffect(() => {
+    if (!initialized) return;
     if (!token) {
       Promise.resolve().then(() => {
         setError("로그인이 필요합니다.");
@@ -77,7 +86,7 @@ export default function CheckoutPage() {
       .then(setCart)
       .catch(() => setError("장바구니를 불러올 수 없습니다."))
       .finally(() => setLoading(false));
-  }, [isBuyNowMode, buyNowIntentId]);
+  }, [initialized, token, isBuyNowMode, buyNowIntentId]);
 
   const itemsToOrder = useMemo(() => {
     if (isBuyNowMode) return buyNowItem ? [buyNowItem] : [];
@@ -95,7 +104,6 @@ export default function CheckoutPage() {
     setError("");
     setSuccess("");
 
-    const token = localStorage.getItem("token");
     if (!token) {
       setError("로그인이 필요합니다.");
       return;

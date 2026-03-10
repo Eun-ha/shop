@@ -1,7 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useAuthStore } from "@/lib/stores/auth-store";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
@@ -11,13 +12,20 @@ interface BuyNowButtonProps {
 }
 
 export default function BuyNowButton({ productId, quantity }: BuyNowButtonProps) {
+  const token = useAuthStore((state) => state.token);
+  const initialized = useAuthStore((state) => state.initialized);
+  const initialize = useAuthStore((state) => state.initialize);
+
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
+  useEffect(() => {
+    initialize();
+  }, [initialize]);
+
   const handleBuyNow = async () => {
-    const token = localStorage.getItem("token");
-    if (!token) {
+    if (!initialized || !token) {
       setMessage("로그인이 필요합니다.");
       return;
     }

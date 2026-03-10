@@ -4,17 +4,26 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import type { Cart } from "@/lib/mock-db";
+import { useAuthStore } from "@/lib/stores/auth-store";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
 export default function CartClient() {
   const router = useRouter();
+  const token = useAuthStore((state) => state.token);
+  const initialized = useAuthStore((state) => state.initialized);
+  const initialize = useAuthStore((state) => state.initialize);
+
   const [cart, setCart] = useState<Cart | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    initialize();
+  }, [initialize]);
+
+  useEffect(() => {
+    if (!initialized) return;
     if (!token) {
       Promise.resolve().then(() => {
         setError("로그인이 필요합니다.");
@@ -31,7 +40,7 @@ export default function CartClient() {
       .then(setCart)
       .catch(() => setError("장바구니를 불러올 수 없습니다."))
       .finally(() => setLoading(false));
-  }, []);
+  }, [initialized, token]);
 
   if (loading) return <div className="max-w-2xl mx-auto py-16 text-center text-zinc-500">로딩 중...</div>;
   if (error) return <div className="max-w-2xl mx-auto py-16 text-center text-red-500">{error}</div>;
