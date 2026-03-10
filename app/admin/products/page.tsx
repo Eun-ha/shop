@@ -1,19 +1,31 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useAuthStore } from "@/lib/stores/auth-store";
+import type { Product } from "@/lib/mock-db";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
 export default function AdminProductsPage() {
-  const [products, setProducts] = useState<any[]>([]);
+  const token = useAuthStore((state) => state.token);
+  const initialized = useAuthStore((state) => state.initialized);
+  const initialize = useAuthStore((state) => state.initialize);
+
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    initialize();
+  }, [initialize]);
+
+  useEffect(() => {
+    if (!initialized) return;
     if (!token) {
-      setError("관리자 로그인이 필요합니다.");
-      setLoading(false);
+      Promise.resolve().then(() => {
+        setError("관리자 로그인이 필요합니다.");
+        setLoading(false);
+      });
       return;
     }
     fetch(`${API_BASE_URL}/api/admin/products`, {
@@ -23,7 +35,7 @@ export default function AdminProductsPage() {
       .then((data) => setProducts(data.items || []))
       .catch(() => setError("상품 목록을 불러올 수 없습니다."))
       .finally(() => setLoading(false));
-  }, []);
+  }, [initialized, token]);
 
   if (loading) return <div className="py-16 text-center text-zinc-500">로딩 중...</div>;
   if (error) return <div className="py-16 text-center text-red-500">{error}</div>;

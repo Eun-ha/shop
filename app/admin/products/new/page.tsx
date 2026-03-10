@@ -1,10 +1,15 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/lib/stores/auth-store";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
 export default function AdminProductNewPage() {
+  const token = useAuthStore((state) => state.token);
+  const initialized = useAuthStore((state) => state.initialized);
+  const initialize = useAuthStore((state) => state.initialize);
+
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
   const [stock, setStock] = useState("");
@@ -13,12 +18,15 @@ export default function AdminProductNewPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
+  useEffect(() => {
+    initialize();
+  }, [initialize]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);
-    const token = localStorage.getItem("token");
-    if (!token) {
+    if (!initialized || !token) {
       setError("관리자 로그인이 필요합니다.");
       setLoading(false);
       return;

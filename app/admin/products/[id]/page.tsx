@@ -1,14 +1,20 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
+import { useAuthStore } from "@/lib/stores/auth-store";
+import type { Product } from "@/lib/mock-db";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
 export default function AdminProductEditPage() {
+  const token = useAuthStore((state) => state.token);
+  const initialized = useAuthStore((state) => state.initialized);
+  const initialize = useAuthStore((state) => state.initialize);
+
   const router = useRouter();
   const params = useParams();
   const id = params?.id as string;
-  const [product, setProduct] = useState<any>(null);
+  const [product, setProduct] = useState<Product | null>(null);
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
   const [stock, setStock] = useState("");
@@ -18,10 +24,16 @@ export default function AdminProductEditPage() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    initialize();
+  }, [initialize]);
+
+  useEffect(() => {
+    if (!initialized) return;
     if (!token) {
-      setError("관리자 로그인이 필요합니다.");
-      setLoading(false);
+      Promise.resolve().then(() => {
+        setError("관리자 로그인이 필요합니다.");
+        setLoading(false);
+      });
       return;
     }
     fetch(`${API_BASE_URL}/api/admin/products/${id}`, {
@@ -37,14 +49,13 @@ export default function AdminProductEditPage() {
       })
       .catch(() => setError("상품 정보를 불러올 수 없습니다."))
       .finally(() => setLoading(false));
-  }, [id]);
+  }, [id, initialized, token]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setSaving(true);
-    const token = localStorage.getItem("token");
-    if (!token) {
+    if (!initialized || !token) {
       setError("관리자 로그인이 필요합니다.");
       setSaving(false);
       return;
@@ -75,8 +86,7 @@ export default function AdminProductEditPage() {
     if (!window.confirm("정말 삭제하시겠습니까?")) return;
     setError("");
     setSaving(true);
-    const token = localStorage.getItem("token");
-    if (!token) {
+    if (!initialized || !token) {
       setError("관리자 로그인이 필요합니다.");
       setSaving(false);
       return;

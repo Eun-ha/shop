@@ -1,7 +1,9 @@
 "use client";
 import { useState } from "react";
+import { useAuthStore } from "@/lib/stores/auth-store";
 
 export default function LoginPage() {
+  const setToken = useAuthStore((state) => state.setToken);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -18,8 +20,7 @@ export default function LoginPage() {
     });
     if (res.ok) {
       const data = await res.json();
-      // JWT 토큰을 localStorage에 저장 (실서비스는 httpOnly 쿠키 권장)
-      localStorage.setItem("token", data.accessToken);
+      setToken(data.accessToken);
       window.location.href = "/";
     } else {
       const data = await res.json().catch(() => ({}));
