@@ -1,6 +1,6 @@
 import { fail, ok, parseJson } from "@/lib/http";
 import { requireAuth } from "@/lib/auth";
-import { products } from "@/lib/mock-db";
+import { buyNowIntents, products } from "@/lib/mock-db";
 
 type Body = {
   productId: string;
@@ -25,15 +25,19 @@ export async function POST(req: Request) {
     return fail("OUT_OF_STOCK", "Insufficient stock.", 409, { stock: p.stock });
   }
 
-  const checkoutUrl = `/checkout?mode=buy-now&productId=${encodeURIComponent(p.id)}&quantity=${quantity}`;
+  const intentId = `intent_${Math.random().toString(16).slice(2)}`;
+  buyNowIntents.set(intentId, {
+    id: intentId,
+    userId: auth.sub,
+    productId: p.id,
+    quantity,
+    createdAt: new Date().toISOString(),
+  });
+
+  const checkoutUrl = `/checkout?mode=buy-now&intentId=${encodeURIComponent(intentId)}`;
 
   return ok({
     checkoutUrl,
-    item: {
-      productId: p.id,
-      name: p.name,
-      price: p.price,
-      quantity,
-    },
+    intentId,
   });
 }

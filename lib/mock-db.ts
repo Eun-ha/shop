@@ -61,6 +61,14 @@ export type Order = {
   createdAt: string;
 };
 
+export type BuyNowIntent = {
+  id: string;
+  userId: string;
+  productId: string;
+  quantity: number;
+  createdAt: string;
+};
+
 // ===== Helpers =====
 const nowIso = () => new Date().toISOString();
 const KRW = (amount: number): Money => ({ amount, currency: "KRW" });
@@ -71,6 +79,7 @@ type MiniShopDB = {
   products: Map<string, Product>;
   carts: Map<string, Cart>; // key: userId
   orders: Map<string, Order>; // key: orderId
+  buyNowIntents: Map<string, BuyNowIntent>; // key: intentId
   seeded: boolean;
 };
 
@@ -86,6 +95,7 @@ const db: MiniShopDB =
     products: new Map<string, Product>(),
     carts: new Map<string, Cart>(),
     orders: new Map<string, Order>(),
+    buyNowIntents: new Map<string, BuyNowIntent>(),
     seeded: false,
   });
 
@@ -94,6 +104,7 @@ export const users = db.users;
 export const products = db.products;
 export const carts = db.carts;
 export const orders = db.orders;
+export const buyNowIntents = db.buyNowIntents;
 
 // ===== Seed (run once) =====
 if (!db.seeded) {

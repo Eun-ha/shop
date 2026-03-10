@@ -41,8 +41,8 @@ export default function BuyNowButton({ productId, quantity }: BuyNowButtonProps)
         return;
       }
 
-      const data = (await res.json()) as { checkoutUrl?: string };
-      router.push(data.checkoutUrl || `/checkout?mode=buy-now&productId=${encodeURIComponent(productId)}&quantity=${quantity}`);
+      const data = (await res.json()) as { checkoutUrl?: string; intentId?: string };
+      router.push(data.checkoutUrl || `/checkout?mode=buy-now&intentId=${encodeURIComponent(data.intentId || "")}`);
     } catch {
       setMessage("네트워크 오류가 발생했습니다.");
     } finally {

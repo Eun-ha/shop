@@ -1,5 +1,5 @@
 "use client";
-import type { Cart, CartItem, Order, Product, ShippingAddress } from "@/lib/mock-db";
+import type { Cart, CartItem, Order, ShippingAddress } from "@/lib/mock-db";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -14,8 +14,7 @@ function getProductImage(productId: string) {
 export default function CheckoutPage() {
   const searchParams = useSearchParams();
   const isBuyNowMode = searchParams.get("mode") === "buy-now";
-  const buyNowProductId = searchParams.get("productId") || "";
-  const buyNowQuantity = Math.max(1, Math.min(99, Number(searchParams.get("quantity") || 1)));
+  const buyNowIntentId = searchParams.get("intentId") || "";
 
   const [cart, setCart] = useState<Cart | null>(null);
   const [buyNowItem, setBuyNowItem] = useState<CartItem | null>(null);
@@ -44,26 +43,22 @@ export default function CheckoutPage() {
     }
 
     if (isBuyNowMode) {
-      if (!buyNowProductId) {
-        setError("바로구매할 상품 정보가 없습니다.");
+      if (!buyNowIntentId) {
+        setError("바로구매 정보가 없습니다. 다시 시도해 주세요.");
         setLoading(false);
         return;
       }
 
-      fetch(`${API_BASE_URL}/api/products/${buyNowProductId}`, { cache: "no-store" })
+      fetch(`${API_BASE_URL}/api/buy-now/${encodeURIComponent(buyNowIntentId)}`, {
+        headers: { Authorization: `Bearer ${token}` },
+        cache: "no-store",
+      })
         .then((res) => {
           if (!res.ok) return Promise.reject(res);
-          return res.json() as Promise<Product>;
+          return res.json() as Promise<{ item: CartItem }>;
         })
-        .then((product) => {
-          setBuyNowItem({
-            itemId: `buy_now_${product.id}`,
-            productId: product.id,
-            name: product.name,
-            price: product.price,
-            quantity: buyNowQuantity,
-            lineTotal: { ...product.price, amount: product.price.amount * buyNowQuantity },
-          });
+        .then((data) => {
+          setBuyNowItem(data.item);
         })
         .catch(() => setError("바로구매 상품을 불러올 수 없습니다."))
         .finally(() => setLoading(false));
@@ -82,7 +77,7 @@ export default function CheckoutPage() {
       .then(setCart)
       .catch(() => setError("장바구니를 불러올 수 없습니다."))
       .finally(() => setLoading(false));
-  }, [isBuyNowMode, buyNowProductId, buyNowQuantity]);
+  }, [isBuyNowMode, buyNowIntentId]);
 
   const itemsToOrder = useMemo(() => {
     if (isBuyNowMode) return buyNowItem ? [buyNowItem] : [];
