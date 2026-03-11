@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "@/lib/stores/auth-store";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
@@ -21,9 +22,6 @@ export default function CheckoutPage() {
   const initialized = useAuthStore((state) => state.initialized);
   const initialize = useAuthStore((state) => state.initialize);
 
-  const [cart, setCart] = useState<Cart | null>(null);
-  const [buyNowItem, setBuyNowItem] = useState<CartItem | null>(null);
-  const [loading, setLoading] = useState(true);
   const [address, setAddress] = useState<ShippingAddress>({
     name: "",
     phone: "",
@@ -41,57 +39,38 @@ export default function CheckoutPage() {
     initialize();
   }, [initialize]);
 
-  useEffect(() => {
-    if (!initialized) return;
-    if (!token) {
-      Promise.resolve().then(() => {
-        setError("로그인이 필요합니다.");
-        setLoading(false);
-      });
-      return;
-    }
-
-    if (isBuyNowMode) {
-      if (!buyNowIntentId) {
-        setError("바로구매 정보가 없습니다. 다시 시도해 주세요.");
-        setLoading(false);
-        return;
-      }
-
-      fetch(`${API_BASE_URL}/api/buy-now/${encodeURIComponent(buyNowIntentId)}`, {
+  const cartQuery = useQuery<Cart>({
+    queryKey: ["checkout-cart", token],
+    enabled: initialized && Boolean(token) && !isBuyNowMode,
+    queryFn: async () => {
+      const res = await fetch(`${API_BASE_URL}/api/cart`, {
         headers: { Authorization: `Bearer ${token}` },
         cache: "no-store",
-      })
-        .then((res) => {
-          if (!res.ok) return Promise.reject(res);
-          return res.json() as Promise<{ item: CartItem }>;
-        })
-        .then((data) => {
-          setBuyNowItem(data.item);
-        })
-        .catch(() => setError("바로구매 상품을 불러올 수 없습니다."))
-        .finally(() => setLoading(false));
+      });
+      if (!res.ok) throw new Error("장바구니를 불러올 수 없습니다.");
+      return res.json();
+    },
+    retry: false,
+  });
 
-      return;
-    }
-
-    fetch(`${API_BASE_URL}/api/cart`, {
-      headers: { Authorization: `Bearer ${token}` },
-      cache: "no-store",
-    })
-      .then((res) => {
-        if (!res.ok) return Promise.reject(res);
-        return res.json();
-      })
-      .then(setCart)
-      .catch(() => setError("장바구니를 불러올 수 없습니다."))
-      .finally(() => setLoading(false));
-  }, [initialized, token, isBuyNowMode, buyNowIntentId]);
+  const buyNowQuery = useQuery<{ item: CartItem }>({
+    queryKey: ["checkout-buy-now", buyNowIntentId, token],
+    enabled: initialized && Boolean(token) && isBuyNowMode && Boolean(buyNowIntentId),
+    queryFn: async () => {
+      const res = await fetch(`${API_BASE_URL}/api/buy-now/${encodeURIComponent(buyNowIntentId)}`, {
+        headers: { Authorization: `Bearer ${token}` },
+        cache: "no-store",
+      });
+      if (!res.ok) throw new Error("바로구매 상품을 불러올 수 없습니다.");
+      return res.json();
+    },
+    retry: false,
+  });
 
   const itemsToOrder = useMemo(() => {
-    if (isBuyNowMode) return buyNowItem ? [buyNowItem] : [];
-    return cart?.items || [];
-  }, [isBuyNowMode, buyNowItem, cart]);
+    if (isBuyNowMode) return buyNowQuery.data?.item ? [buyNowQuery.data.item] : [];
+    return cartQuery.data?.items || [];
+  }, [isBuyNowMode, buyNowQuery.data, cartQuery.data]);
 
   const subtotalAmount = useMemo(() => itemsToOrder.reduce((sum, item) => sum + item.lineTotal.amount, 0), [itemsToOrder]);
 
@@ -139,8 +118,6 @@ export default function CheckoutPage() {
         const data = (await res.json()) as { order?: Order };
         setOrdered(data.order || null);
         setSuccess("주문이 완료되었습니다!");
-        setCart(null);
-        setBuyNowItem(null);
       } else {
         const data = await res.json().catch(() => ({}));
         setError(data?.message || "주문 처리 중 오류가 발생했습니다.");
@@ -200,7 +177,17 @@ export default function CheckoutPage() {
     );
   }
 
+  const loading = !initialized || cartQuery.isLoading || buyNowQuery.isLoading;
   if (loading) return <div className="py-16 text-center text-zinc-500">로딩 중...</div>;
+
+  if (!token) return <div className="max-w-2xl mx-auto py-16 text-center text-red-500">로그인이 필요합니다.</div>;
+  if (isBuyNowMode && !buyNowIntentId) return <div className="max-w-2xl mx-auto py-16 text-center text-red-500">바로구매 정보가 없습니다. 다시 시도해 주세요.</div>;
+
+  const queryError = isBuyNowMode ? buyNowQuery.error : cartQuery.error;
+  if (queryError && itemsToOrder.length === 0) {
+    return <div className="max-w-2xl mx-auto py-16 text-center text-red-500">{isBuyNowMode ? "바로구매 상품을 불러올 수 없습니다." : "장바구니를 불러올 수 없습니다."}</div>;
+  }
+
   if (error && itemsToOrder.length === 0) return <div className="max-w-2xl mx-auto py-16 text-center text-red-500">{error}</div>;
   if (itemsToOrder.length === 0) {
     return <div className="max-w-2xl mx-auto py-16 text-center text-zinc-500">{isBuyNowMode ? "바로구매할 상품이 없습니다." : "장바구니가 비어 있습니다."}</div>;
