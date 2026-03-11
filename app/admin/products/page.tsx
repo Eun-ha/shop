@@ -1,44 +1,43 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
 import Link from "next/link";
 import { useAuthStore } from "@/lib/stores/auth-store";
 import type { Product } from "@/lib/mock-db";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
+type ProductsResponse = {
+  items?: Product[];
+};
+
 export default function AdminProductsPage() {
   const token = useAuthStore((state) => state.token);
   const initialized = useAuthStore((state) => state.initialized);
   const initialize = useAuthStore((state) => state.initialize);
 
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
   useEffect(() => {
     initialize();
   }, [initialize]);
 
-  useEffect(() => {
-    if (!initialized) return;
-    if (!token) {
-      Promise.resolve().then(() => {
-        setError("관리자 로그인이 필요합니다.");
-        setLoading(false);
+  const { data, isLoading, error } = useQuery<ProductsResponse>({
+    queryKey: ["admin-products", token],
+    enabled: initialized && Boolean(token),
+    queryFn: async () => {
+      const res = await fetch(`${API_BASE_URL}/api/admin/products`, {
+        headers: { Authorization: `Bearer ${token}` },
       });
-      return;
-    }
-    fetch(`${API_BASE_URL}/api/admin/products`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((res) => res.ok ? res.json() : Promise.reject(res))
-      .then((data) => setProducts(data.items || []))
-      .catch(() => setError("상품 목록을 불러올 수 없습니다."))
-      .finally(() => setLoading(false));
-  }, [initialized, token]);
+      if (!res.ok) throw new Error("상품 목록을 불러올 수 없습니다.");
+      return res.json();
+    },
+    retry: false,
+  });
 
-  if (loading) return <div className="py-16 text-center text-zinc-500">로딩 중...</div>;
-  if (error) return <div className="py-16 text-center text-red-500">{error}</div>;
+  const products = data?.items || [];
+
+  if (!initialized || isLoading) return <div className="py-16 text-center text-zinc-500">로딩 중...</div>;
+  if (!token) return <div className="py-16 text-center text-red-500">관리자 로그인이 필요합니다.</div>;
+  if (error) return <div className="py-16 text-center text-red-500">상품 목록을 불러올 수 없습니다.</div>;
 
   return (
     <main className="max-w-4xl mx-auto py-16 px-4">
