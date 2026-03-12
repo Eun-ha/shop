@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/stores/auth-store";
+import { useAsyncUiState } from "@/lib/hooks/useAsyncUiState";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
@@ -14,8 +15,7 @@ export default function AdminProductNewPage() {
   const [price, setPrice] = useState("");
   const [stock, setStock] = useState("");
   const [status, setStatus] = useState("ACTIVE");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const ui = useAsyncUiState();
   const router = useRouter();
 
   useEffect(() => {
@@ -24,11 +24,9 @@ export default function AdminProductNewPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
-    setLoading(true);
+    ui.start();
     if (!initialized || !token) {
-      setError("관리자 로그인이 필요합니다.");
-      setLoading(false);
+      ui.fail("관리자 로그인이 필요합니다.");
       return;
     }
     const res = await fetch(`${API_BASE_URL}/api/admin/products`, {
@@ -48,15 +46,15 @@ export default function AdminProductNewPage() {
       router.push("/admin/products");
     } else {
       const data = await res.json().catch(() => ({}));
-      setError(data?.message || "상품 등록에 실패했습니다.");
+      ui.fail(data?.message || "상품 등록에 실패했습니다.");
     }
-    setLoading(false);
+
   };
 
   return (
     <main className="max-w-md mx-auto py-16 px-4">
       <h1 className="text-2xl font-bold mb-8 text-zinc-900 dark:text-zinc-50">상품 등록</h1>
-      {error && <div className="mb-4 text-red-500">{error}</div>}
+      {ui.message && <div className="mb-4 text-red-500">{ui.message}</div>}
       <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
         <input
           className="border rounded px-4 py-2"
@@ -94,9 +92,9 @@ export default function AdminProductNewPage() {
         <button
           type="submit"
           className="mt-4 px-8 py-3 rounded bg-blue-600 text-white font-semibold hover:bg-blue-700 transition"
-          disabled={loading}
+          disabled={ui.loading}
         >
-          {loading ? "등록 중..." : "상품 등록"}
+          {ui.loading ? "등록 중..." : "상품 등록"}
         </button>
       </form>
     </main>

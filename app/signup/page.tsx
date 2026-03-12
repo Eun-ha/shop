@@ -1,35 +1,19 @@
 "use client";
-import { useState } from "react";
+import { useSignupForm } from "./useSignupForm";
 
 export default function SignupPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    setSuccess("");
-    setLoading(true);
-    const res = await fetch("/api/auth/signup", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password, name }),
-    });
-    if (res.ok) {
-      setSuccess("회원가입이 완료되었습니다. 로그인 해주세요.");
-      setEmail("");
-      setPassword("");
-      setName("");
-    } else {
-      const data = await res.json().catch(() => ({}));
-      setError(data?.message || "회원가입에 실패했습니다.");
-    }
-    setLoading(false);
-  };
+  const {
+    email,
+    password,
+    name,
+    setEmail,
+    setPassword,
+    setName,
+    error,
+    success,
+    loading,
+    handleSubmit,
+  } = useSignupForm();
 
   return (
     <main className="max-w-md mx-auto py-16 px-4">
@@ -42,7 +26,7 @@ export default function SignupPage() {
           type="text"
           placeholder="이름"
           value={name}
-          onChange={e => setName(e.target.value)}
+          onChange={(e) => setName(e.target.value)}
           required
         />
         <input
@@ -50,7 +34,7 @@ export default function SignupPage() {
           type="email"
           placeholder="이메일"
           value={email}
-          onChange={e => setEmail(e.target.value)}
+          onChange={(e) => setEmail(e.target.value)}
           required
         />
         <input
@@ -58,7 +42,7 @@ export default function SignupPage() {
           type="password"
           placeholder="비밀번호"
           value={password}
-          onChange={e => setPassword(e.target.value)}
+          onChange={(e) => setPassword(e.target.value)}
           required
         />
         <button

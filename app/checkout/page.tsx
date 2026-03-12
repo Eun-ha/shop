@@ -1,11 +1,12 @@
 "use client";
-import type { Cart, CartItem, Order, ShippingAddress } from "@/lib/mock-db";
+import type { Cart, CartItem, Order } from "@/lib/mock-db";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "@/lib/stores/auth-store";
+import { useCheckoutState } from "./useCheckoutState";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
@@ -22,18 +23,8 @@ export default function CheckoutPage() {
   const initialized = useAuthStore((state) => state.initialized);
   const initialize = useAuthStore((state) => state.initialize);
 
-  const [address, setAddress] = useState<ShippingAddress>({
-    name: "",
-    phone: "",
-    address1: "",
-    address2: "",
-    city: "",
-    postalCode: "",
-  });
-  const [error, setError] = useState<string>("");
-  const [success, setSuccess] = useState<string>("");
-  const [ordered, setOrdered] = useState<Order | null>(null);
-  const [submitting, setSubmitting] = useState(false);
+  const { address, error, success, ordered, submitting, setAddressField, startSubmit, setSubmitError, setSubmitSuccess, resetMessages } =
+    useCheckoutState();
 
   useEffect(() => {
     initialize();
@@ -75,30 +66,29 @@ export default function CheckoutPage() {
   const subtotalAmount = useMemo(() => itemsToOrder.reduce((sum, item) => sum + item.lineTotal.amount, 0), [itemsToOrder]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setAddress((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    setAddressField(e.target.name as keyof typeof address, e.target.value);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
-    setSuccess("");
+    resetMessages();
 
     if (!token) {
-      setError("로그인이 필요합니다.");
+      setSubmitError("로그인이 필요합니다.");
       return;
     }
 
     if (itemsToOrder.length === 0) {
-      setError(isBuyNowMode ? "바로구매할 상품이 없습니다." : "장바구니가 비어 있습니다.");
+      setSubmitError(isBuyNowMode ? "바로구매할 상품이 없습니다." : "장바구니가 비어 있습니다.");
       return;
     }
 
     if (!address.name || !address.phone || !address.address1 || !address.city || !address.postalCode) {
-      setError("배송지 정보를 모두 입력해 주세요.");
+      setSubmitError("배송지 정보를 모두 입력해 주세요.");
       return;
     }
 
-    setSubmitting(true);
+    startSubmit();
     const body = {
       items: itemsToOrder.map((item) => ({ productId: item.productId, quantity: item.quantity })),
       shippingAddress: address,
@@ -116,16 +106,15 @@ export default function CheckoutPage() {
 
       if (res.ok) {
         const data = (await res.json()) as { order?: Order };
-        setOrdered(data.order || null);
-        setSuccess("주문이 완료되었습니다!");
+        setSubmitSuccess("주문이 완료되었습니다!", data.order || null);
       } else {
         const data = await res.json().catch(() => ({}));
-        setError(data?.message || "주문 처리 중 오류가 발생했습니다.");
+        setSubmitError(data?.message || "주문 처리 중 오류가 발생했습니다.");
       }
     } catch {
-      setError("네트워크 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
+      setSubmitError("네트워크 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
     } finally {
-      setSubmitting(false);
+      // submitting state is managed in reducer by success/error actions
     }
   };
 

@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useAuthStore } from "@/lib/stores/auth-store";
+import { useAsyncUiState } from "@/lib/hooks/useAsyncUiState";
 import type { Product } from "@/lib/mock-db";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
@@ -19,8 +20,7 @@ export default function AdminProductEditPage() {
   const [price, setPrice] = useState<string | undefined>(undefined);
   const [stock, setStock] = useState<string | undefined>(undefined);
   const [status, setStatus] = useState<string | undefined>(undefined);
-  const [error, setError] = useState("");
-  const [saving, setSaving] = useState(false);
+  const ui = useAsyncUiState();
 
   useEffect(() => {
     initialize();
@@ -46,11 +46,9 @@ export default function AdminProductEditPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
-    setSaving(true);
+    ui.start();
     if (!initialized || !token) {
-      setError("관리자 로그인이 필요합니다.");
-      setSaving(false);
+      ui.fail("관리자 로그인이 필요합니다.");
       return;
     }
     const res = await fetch(`${API_BASE_URL}/api/admin/products/${id}`, {
@@ -70,18 +68,15 @@ export default function AdminProductEditPage() {
       router.push("/admin/products");
     } else {
       const data = await res.json().catch(() => ({}));
-      setError(data?.message || "상품 수정에 실패했습니다.");
+      ui.fail(data?.message || "상품 수정에 실패했습니다.");
     }
-    setSaving(false);
   };
 
   const handleDelete = async () => {
     if (!window.confirm("정말 삭제하시겠습니까?")) return;
-    setError("");
-    setSaving(true);
+    ui.start();
     if (!initialized || !token) {
-      setError("관리자 로그인이 필요합니다.");
-      setSaving(false);
+      ui.fail("관리자 로그인이 필요합니다.");
       return;
     }
     const res = await fetch(`${API_BASE_URL}/api/admin/products/${id}`, {
@@ -92,9 +87,8 @@ export default function AdminProductEditPage() {
       router.push("/admin/products");
     } else {
       const data = await res.json().catch(() => ({}));
-      setError(data?.message || "상품 삭제에 실패했습니다.");
+      ui.fail(data?.message || "상품 삭제에 실패했습니다.");
     }
-    setSaving(false);
   };
 
   if (!initialized || isLoading) return <div className="py-16 text-center text-zinc-500">로딩 중...</div>;
@@ -105,7 +99,7 @@ export default function AdminProductEditPage() {
   return (
     <main className="max-w-md mx-auto py-16 px-4">
       <h1 className="text-2xl font-bold mb-8 text-zinc-900 dark:text-zinc-50">상품 수정</h1>
-      {error && <div className="mb-4 text-red-500">{error}</div>}
+      {ui.message && <div className="mb-4 text-red-500">{ui.message}</div>}
       <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
         <input className="border rounded px-4 py-2" type="text" placeholder="상품명" value={resolvedName} onChange={e => setName(e.target.value)} required />
         <input className="border rounded px-4 py-2" type="number" placeholder="가격(원)" value={resolvedPrice} onChange={e => setPrice(e.target.value)} required />
@@ -116,10 +110,10 @@ export default function AdminProductEditPage() {
           <option value="SOLD_OUT">품절</option>
         </select>
         <div className="flex gap-2 mt-4">
-          <button type="submit" className="px-8 py-3 rounded bg-blue-600 text-white font-semibold hover:bg-blue-700 transition" disabled={saving}>
-            {saving ? "수정 중..." : "상품 수정"}
+          <button type="submit" className="px-8 py-3 rounded bg-blue-600 text-white font-semibold hover:bg-blue-700 transition" disabled={ui.loading}>
+            {ui.loading ? "수정 중..." : "상품 수정"}
           </button>
-          <button type="button" className="px-8 py-3 rounded bg-red-500 text-white font-semibold hover:bg-red-600 transition" onClick={handleDelete} disabled={saving}>
+          <button type="button" className="px-8 py-3 rounded bg-red-500 text-white font-semibold hover:bg-red-600 transition" onClick={handleDelete} disabled={ui.loading}>
             삭제
           </button>
         </div>
