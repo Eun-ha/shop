@@ -1,7 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useAsyncUiState } from "@/lib/hooks/useAsyncUiState";
 import { useAuthStore } from "@/lib/stores/auth-store";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
@@ -17,8 +18,7 @@ export default function BuyNowButton({ productId, quantity }: BuyNowButtonProps)
   const initialize = useAuthStore((state) => state.initialize);
 
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
+  const ui = useAsyncUiState();
 
   useEffect(() => {
     initialize();
@@ -26,12 +26,11 @@ export default function BuyNowButton({ productId, quantity }: BuyNowButtonProps)
 
   const handleBuyNow = async () => {
     if (!initialized || !token) {
-      setMessage("로그인이 필요합니다.");
+      ui.fail("로그인이 필요합니다.");
       return;
     }
 
-    setLoading(true);
-    setMessage("");
+    ui.start();
 
     try {
       const res = await fetch(`${API_BASE_URL}/api/buy-now`, {
@@ -45,16 +44,15 @@ export default function BuyNowButton({ productId, quantity }: BuyNowButtonProps)
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        setMessage(data?.message || "바로구매를 시작할 수 없습니다.");
+        ui.fail(data?.message || "바로구매를 시작할 수 없습니다.");
         return;
       }
 
       const data = (await res.json()) as { checkoutUrl?: string; intentId?: string };
+      ui.succeed();
       router.push(data.checkoutUrl || `/checkout?mode=buy-now&intentId=${encodeURIComponent(data.intentId || "")}`);
     } catch {
-      setMessage("네트워크 오류가 발생했습니다.");
-    } finally {
-      setLoading(false);
+      ui.fail("네트워크 오류가 발생했습니다.");
     }
   };
 
@@ -64,11 +62,11 @@ export default function BuyNowButton({ productId, quantity }: BuyNowButtonProps)
         type="button"
         className="px-6 py-3 rounded bg-zinc-900 text-white font-semibold hover:bg-zinc-700 transition disabled:bg-zinc-400"
         onClick={handleBuyNow}
-        disabled={loading}
+        disabled={ui.loading}
       >
-        {loading ? "이동 중..." : "바로구매"}
+        {ui.loading ? "이동 중..." : "바로구매"}
       </button>
-      {message && <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-300">{message}</p>}
+      {ui.message && <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-300">{ui.message}</p>}
     </div>
   );
 }

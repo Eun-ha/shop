@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useAsyncUiState } from "@/lib/hooks/useAsyncUiState";
 import { useAuthStore } from "@/lib/stores/auth-store";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
@@ -15,8 +16,7 @@ export default function AddToCartButton({ productId, quantity }: AddToCartButton
   const initialized = useAuthStore((state) => state.initialized);
   const initialize = useAuthStore((state) => state.initialize);
 
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
+  const ui = useAsyncUiState();
 
   useEffect(() => {
     initialize();
@@ -24,12 +24,11 @@ export default function AddToCartButton({ productId, quantity }: AddToCartButton
 
   const handleAddToCart = async () => {
     if (!initialized || !token) {
-      setMessage("로그인이 필요합니다.");
+      ui.fail("로그인이 필요합니다.");
       return;
     }
 
-    setLoading(true);
-    setMessage("");
+    ui.start();
 
     try {
       const res = await fetch(`${API_BASE_URL}/api/cart`, {
@@ -43,15 +42,13 @@ export default function AddToCartButton({ productId, quantity }: AddToCartButton
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        setMessage(data?.message || "장바구니 담기에 실패했습니다.");
+        ui.fail(data?.message || "장바구니 담기에 실패했습니다.");
         return;
       }
 
-      setMessage("장바구니에 담았습니다.");
+      ui.succeed("장바구니에 담았습니다.");
     } catch {
-      setMessage("네트워크 오류가 발생했습니다.");
-    } finally {
-      setLoading(false);
+      ui.fail("네트워크 오류가 발생했습니다.");
     }
   };
 
@@ -61,11 +58,11 @@ export default function AddToCartButton({ productId, quantity }: AddToCartButton
         type="button"
         className="px-6 py-3 rounded bg-blue-600 text-white font-semibold hover:bg-blue-700 transition disabled:bg-blue-300"
         onClick={handleAddToCart}
-        disabled={loading}
+        disabled={ui.loading}
       >
-        {loading ? "담는 중..." : "장바구니 담기"}
+        {ui.loading ? "담는 중..." : "장바구니 담기"}
       </button>
-      {message && <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-300">{message}</p>}
+      {ui.message && <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-300">{ui.message}</p>}
     </div>
   );
 }

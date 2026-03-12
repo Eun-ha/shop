@@ -1,33 +1,8 @@
 "use client";
-import { useState } from "react";
-import { useAuthStore } from "@/lib/stores/auth-store";
+import { useLoginForm } from "./useLoginForm";
 
 export default function LoginPage() {
-  const setToken = useAuthStore((state) => state.setToken);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
-    const res = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
-    if (res.ok) {
-      const data = await res.json();
-      setToken(data.accessToken);
-      window.location.href = "/";
-    } else {
-      const data = await res.json().catch(() => ({}));
-      setError(data?.message || "로그인에 실패했습니다.");
-    }
-    setLoading(false);
-  };
+  const { email, password, setEmail, setPassword, error, loading, handleSubmit } = useLoginForm();
 
   return (
     <main className="max-w-md mx-auto py-16 px-4">
@@ -39,7 +14,7 @@ export default function LoginPage() {
           type="email"
           placeholder="이메일"
           value={email}
-          onChange={e => setEmail(e.target.value)}
+          onChange={(e) => setEmail(e.target.value)}
           required
         />
         <input
@@ -47,7 +22,7 @@ export default function LoginPage() {
           type="password"
           placeholder="비밀번호"
           value={password}
-          onChange={e => setPassword(e.target.value)}
+          onChange={(e) => setPassword(e.target.value)}
           required
         />
         <button
