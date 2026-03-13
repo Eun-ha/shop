@@ -5,6 +5,14 @@ import type { Product } from "@/lib/mock-db";
 
 type Body = Omit<Product, "id" | "createdAt" | "updatedAt">;
 
+export async function GET(req: Request) {
+  const auth = requireAuth(req);
+  if (!auth) return fail("UNAUTHORIZED", "Unauthorized", 401);
+  if (auth.role !== "ADMIN") return fail("FORBIDDEN", "Forbidden", 403);
+
+  return Response.json({ items: Array.from(products.values()) });
+}
+
 export async function POST(req: Request) {
   const auth = requireAuth(req);
   if (!auth) return fail("UNAUTHORIZED", "Unauthorized", 401);
