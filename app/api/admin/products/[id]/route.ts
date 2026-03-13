@@ -5,6 +5,19 @@ import type { Product } from "@/lib/mock-db";
 
 type PatchBody = Partial<Omit<Product, "id" | "createdAt" | "updatedAt">>;
 
+export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }) {
+  const auth = requireAuth(req);
+  if (!auth) return fail("UNAUTHORIZED", "Unauthorized", 401);
+  if (auth.role !== "ADMIN") return fail("FORBIDDEN", "Forbidden", 403);
+
+  const params = await ctx.params;
+  const product = products.get(params.id);
+  if (!product) return fail("PRODUCT_NOT_FOUND", "Product not found.", 404);
+
+  return ok(product);
+}
+
+
 export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }> }) {
   const auth = requireAuth(req);
   if (!auth) return fail("UNAUTHORIZED", "Unauthorized", 401);
@@ -25,4 +38,17 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
 
   products.set(existing.id, next);
   return ok(next);
+}
+
+export async function DELETE(req: Request, ctx: { params: Promise<{ id: string }> }) {
+  const auth = requireAuth(req);
+  if (!auth) return fail("UNAUTHORIZED", "Unauthorized", 401);
+  if (auth.role !== "ADMIN") return fail("FORBIDDEN", "Forbidden", 403);
+
+  const params = await ctx.params;
+  const existing = products.get(params.id);
+  if (!existing) return fail("PRODUCT_NOT_FOUND", "Product not found.", 404);
+
+  products.delete(params.id);
+  return ok({ success: true });
 }
