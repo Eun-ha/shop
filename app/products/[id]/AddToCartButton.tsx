@@ -1,5 +1,6 @@
 "use client";
 
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAsyncUiState } from "@/lib/hooks/useAsyncUiState";
 import { useAuthStore } from "@/lib/stores/auth-store";
 
@@ -13,19 +14,16 @@ interface AddToCartButtonProps {
 export default function AddToCartButton({ productId, quantity }: AddToCartButtonProps) {
   const token = useAuthStore((state) => state.token);
   const initialized = useAuthStore((state) => state.initialized);
+  const queryClient = useQueryClient();
 
   const ui = useAsyncUiState();
 
+  const addToCartMutation = useMutation({
+    mutationFn: async () => {
+      if (!initialized || !token) {
+        throw new Error("LOGIN_REQUIRED");
+      }
 
-  const handleAddToCart = async () => {
-    if (!initialized || !token) {
-      ui.fail("로그인이 필요합니다.");
-      return;
-    }
-
-    ui.start();
-
-    try {
       const res = await fetch(`${API_BASE_URL}/api/cart`, {
         method: "POST",
         headers: {
@@ -37,25 +35,42 @@ export default function AddToCartButton({ productId, quantity }: AddToCartButton
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        ui.fail(data?.message || "장바구니 담기에 실패했습니다.");
+        throw new Error(data?.message || "장바구니 담기에 실패했습니다.");
+      }
+    },
+    onMutate: () => {
+      ui.start();
+    },
+    onSuccess: () => {
+      ui.succeed("장바구니에 담았습니다.");
+      if (token) {
+        queryClient.invalidateQueries({ queryKey: ["cart", token] });
+      }
+    },
+    onError: (error) => {
+      if (error instanceof Error && error.message === "LOGIN_REQUIRED") {
+        ui.fail("로그인이 필요합니다.");
         return;
       }
 
-      ui.succeed("장바구니에 담았습니다.");
-    } catch {
+      if (error instanceof Error) {
+        ui.fail(error.message);
+        return;
+      }
+
       ui.fail("네트워크 오류가 발생했습니다.");
-    }
-  };
+    },
+  });
 
   return (
     <div>
       <button
         type="button"
         className="px-6 py-3 rounded bg-blue-600 text-white font-semibold hover:bg-blue-700 transition disabled:bg-blue-300"
-        onClick={handleAddToCart}
-        disabled={ui.loading}
+        onClick={() => addToCartMutation.mutate()}
+        disabled={ui.loading || addToCartMutation.isPending}
       >
-        {ui.loading ? "담는 중..." : "장바구니 담기"}
+        {ui.loading || addToCartMutation.isPending ? "담는 중..." : "장바구니 담기"}
       </button>
       {ui.message && <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-300">{ui.message}</p>}
     </div>
