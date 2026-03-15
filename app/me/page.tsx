@@ -1,6 +1,5 @@
 "use client";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
 import { useAuthStore } from "@/lib/stores/auth-store";
 import type { User } from "@/lib/mock-db";
 
@@ -9,12 +8,8 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
 export default function MePage() {
   const token = useAuthStore((state) => state.token);
   const initialized = useAuthStore((state) => state.initialized);
-  const initialize = useAuthStore((state) => state.initialize);
   const clearToken = useAuthStore((state) => state.clearToken);
 
-  useEffect(() => {
-    initialize();
-  }, [initialize]);
 
   const {
     data: user,

@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
 import { useAsyncUiState } from "@/lib/hooks/useAsyncUiState";
 import { useAuthStore } from "@/lib/stores/auth-store";
 
@@ -14,13 +13,9 @@ interface AddToCartButtonProps {
 export default function AddToCartButton({ productId, quantity }: AddToCartButtonProps) {
   const token = useAuthStore((state) => state.token);
   const initialized = useAuthStore((state) => state.initialized);
-  const initialize = useAuthStore((state) => state.initialize);
 
   const ui = useAsyncUiState();
 
-  useEffect(() => {
-    initialize();
-  }, [initialize]);
 
   const handleAddToCart = async () => {
     if (!initialized || !token) {

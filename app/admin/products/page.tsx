@@ -1,6 +1,5 @@
 "use client";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
 import Link from "next/link";
 import { useAuthStore } from "@/lib/stores/auth-store";
 import type { Product } from "@/lib/mock-db";
@@ -14,11 +13,7 @@ type ProductsResponse = {
 export default function AdminProductsPage() {
   const token = useAuthStore((state) => state.token);
   const initialized = useAuthStore((state) => state.initialized);
-  const initialize = useAuthStore((state) => state.initialize);
 
-  useEffect(() => {
-    initialize();
-  }, [initialize]);
 
   const { data, isLoading, error } = useQuery<ProductsResponse>({
     queryKey: ["admin-products", token],

@@ -3,7 +3,7 @@ import type { Cart, CartItem, Order } from "@/lib/mock-db";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "@/lib/stores/auth-store";
 import { useCheckoutState } from "./useCheckoutState";
@@ -21,14 +21,10 @@ export default function CheckoutPage() {
 
   const token = useAuthStore((state) => state.token);
   const initialized = useAuthStore((state) => state.initialized);
-  const initialize = useAuthStore((state) => state.initialize);
 
   const { address, error, success, ordered, submitting, setAddressField, startSubmit, setSubmitError, setSubmitSuccess, resetMessages } =
     useCheckoutState();
 
-  useEffect(() => {
-    initialize();
-  }, [initialize]);
 
   const cartQuery = useQuery<Cart>({
     queryKey: ["checkout-cart", token],
