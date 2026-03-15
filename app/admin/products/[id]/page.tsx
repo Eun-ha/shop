@@ -5,6 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import { useAuthStore } from "@/lib/stores/auth-store";
 import { useAsyncUiState } from "@/lib/hooks/useAsyncUiState";
 import type { Product } from "@/lib/mock-db";
+import { parseApiErrorMessage, withAuthorization } from "@/lib/client-api";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
@@ -27,7 +28,7 @@ export default function AdminProductEditPage() {
     enabled: initialized && Boolean(token) && Boolean(id),
     queryFn: async () => {
       const res = await fetch(`${API_BASE_URL}/api/admin/products/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: withAuthorization(token),
       });
       if (!res.ok) throw new Error("상품 정보를 불러올 수 없습니다.");
       return res.json();
@@ -49,10 +50,9 @@ export default function AdminProductEditPage() {
     }
     const res = await fetch(`${API_BASE_URL}/api/admin/products/${id}`, {
       method: "PATCH",
-      headers: {
+      headers: withAuthorization(token, {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
+      }),
       body: JSON.stringify({
         name: resolvedName,
         price: { amount: Number(resolvedPrice), currency: "KRW" },
@@ -63,8 +63,7 @@ export default function AdminProductEditPage() {
     if (res.ok) {
       router.push("/admin/products");
     } else {
-      const data = await res.json().catch(() => ({}));
-      ui.fail(data?.message || "상품 수정에 실패했습니다.");
+      ui.fail(await parseApiErrorMessage(res, "상품 수정에 실패했습니다."));
     }
   };
 
@@ -77,13 +76,12 @@ export default function AdminProductEditPage() {
     }
     const res = await fetch(`${API_BASE_URL}/api/admin/products/${id}`, {
       method: "DELETE",
-      headers: { Authorization: `Bearer ${token}` },
+      headers: withAuthorization(token),
     });
     if (res.ok) {
       router.push("/admin/products");
     } else {
-      const data = await res.json().catch(() => ({}));
-      ui.fail(data?.message || "상품 삭제에 실패했습니다.");
+      ui.fail(await parseApiErrorMessage(res, "상품 삭제에 실패했습니다."));
     }
   };
 

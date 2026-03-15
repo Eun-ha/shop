@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useAsyncUiState } from "@/lib/hooks/useAsyncUiState";
+import { parseApiErrorMessage } from "@/lib/client-api";
 
 export function useSignupForm() {
   const [email, setEmail] = useState("");
@@ -26,8 +27,7 @@ export function useSignupForm() {
       return;
     }
 
-    const data = await res.json().catch(() => ({}));
-    ui.fail(data?.message || "회원가입에 실패했습니다.");
+    ui.fail(await parseApiErrorMessage(res, "회원가입에 실패했습니다."));
   };
 
   return {

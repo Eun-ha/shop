@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useAsyncUiState } from "@/lib/hooks/useAsyncUiState";
 import { useAuthStore } from "@/lib/stores/auth-store";
+import { parseApiErrorMessage } from "@/lib/client-api";
 
 export function useLoginForm() {
   const setToken = useAuthStore((state) => state.setToken);
@@ -28,8 +29,7 @@ export function useLoginForm() {
       return;
     }
 
-    const data = await res.json().catch(() => ({}));
-    ui.fail(data?.message || "로그인에 실패했습니다.");
+    ui.fail(await parseApiErrorMessage(res, "로그인에 실패했습니다."));
   };
 
   return {

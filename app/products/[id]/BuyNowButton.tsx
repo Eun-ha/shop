@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useAsyncUiState } from "@/lib/hooks/useAsyncUiState";
 import { useAuthStore } from "@/lib/stores/auth-store";
+import { parseApiErrorMessage, withAuthorization } from "@/lib/client-api";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
@@ -30,16 +31,14 @@ export default function BuyNowButton({ productId, quantity }: BuyNowButtonProps)
     try {
       const res = await fetch(`${API_BASE_URL}/api/buy-now`, {
         method: "POST",
-        headers: {
+        headers: withAuthorization(token, {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        }),
         body: JSON.stringify({ productId, quantity }),
       });
 
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        ui.fail(data?.message || "바로구매를 시작할 수 없습니다.");
+        ui.fail(await parseApiErrorMessage(res, "바로구매를 시작할 수 없습니다."));
         return;
       }
 
