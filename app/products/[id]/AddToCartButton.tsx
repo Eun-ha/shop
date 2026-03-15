@@ -3,6 +3,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAsyncUiState } from "@/lib/hooks/useAsyncUiState";
 import { useAuthStore } from "@/lib/stores/auth-store";
+import { parseApiErrorMessage, withAuthorization } from "@/lib/client-api";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
@@ -26,16 +27,14 @@ export default function AddToCartButton({ productId, quantity }: AddToCartButton
 
       const res = await fetch(`${API_BASE_URL}/api/cart`, {
         method: "POST",
-        headers: {
+        headers: withAuthorization(token, {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        }),
         body: JSON.stringify({ productId, quantity }),
       });
 
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data?.message || "장바구니 담기에 실패했습니다.");
+        throw new Error(await parseApiErrorMessage(res, "장바구니 담기에 실패했습니다."));
       }
     },
     onMutate: () => {

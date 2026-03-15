@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useAuthStore } from "@/lib/stores/auth-store";
 import type { Product } from "@/lib/mock-db";
+import { withAuthorization } from "@/lib/client-api";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
@@ -20,7 +21,7 @@ export default function AdminProductsPage() {
     enabled: initialized && Boolean(token),
     queryFn: async () => {
       const res = await fetch(`${API_BASE_URL}/api/admin/products`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: withAuthorization(token),
       });
       if (!res.ok) throw new Error("상품 목록을 불러올 수 없습니다.");
       return res.json();

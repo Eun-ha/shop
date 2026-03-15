@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import type { Cart } from "@/lib/mock-db";
 import { useAuthStore } from "@/lib/stores/auth-store";
+import { withAuthorization } from "@/lib/client-api";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
@@ -23,7 +24,7 @@ export default function CartClient() {
     enabled: initialized && Boolean(token),
     queryFn: async () => {
       const res = await fetch(`${API_BASE_URL}/api/cart`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: withAuthorization(token),
         cache: "no-store",
       });
       if (!res.ok) throw new Error("장바구니를 불러올 수 없습니다.");

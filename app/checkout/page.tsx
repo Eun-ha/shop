@@ -7,6 +7,7 @@ import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "@/lib/stores/auth-store";
 import { useCheckoutState } from "./useCheckoutState";
+import { parseApiErrorMessage, withAuthorization } from "@/lib/client-api";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
@@ -31,7 +32,7 @@ export default function CheckoutPage() {
     enabled: initialized && Boolean(token) && !isBuyNowMode,
     queryFn: async () => {
       const res = await fetch(`${API_BASE_URL}/api/cart`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: withAuthorization(token),
         cache: "no-store",
       });
       if (!res.ok) throw new Error("장바구니를 불러올 수 없습니다.");
@@ -45,7 +46,7 @@ export default function CheckoutPage() {
     enabled: initialized && Boolean(token) && isBuyNowMode && Boolean(buyNowIntentId),
     queryFn: async () => {
       const res = await fetch(`${API_BASE_URL}/api/buy-now/${encodeURIComponent(buyNowIntentId)}`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: withAuthorization(token),
         cache: "no-store",
       });
       if (!res.ok) throw new Error("바로구매 상품을 불러올 수 없습니다.");
@@ -93,10 +94,9 @@ export default function CheckoutPage() {
     try {
       const res = await fetch(`${API_BASE_URL}/api/checkout`, {
         method: "POST",
-        headers: {
+        headers: withAuthorization(token, {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        }),
         body: JSON.stringify(body),
       });
 
@@ -104,8 +104,7 @@ export default function CheckoutPage() {
         const data = (await res.json()) as { order?: Order };
         setSubmitSuccess("주문이 완료되었습니다!", data.order || null);
       } else {
-        const data = await res.json().catch(() => ({}));
-        setSubmitError(data?.message || "주문 처리 중 오류가 발생했습니다.");
+        setSubmitError(await parseApiErrorMessage(res, "주문 처리 중 오류가 발생했습니다."));
       }
     } catch {
       setSubmitError("네트워크 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");

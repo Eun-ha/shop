@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/stores/auth-store";
 import { useAsyncUiState } from "@/lib/hooks/useAsyncUiState";
+import { parseApiErrorMessage, withAuthorization } from "@/lib/client-api";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
@@ -27,10 +28,9 @@ export default function AdminProductNewPage() {
     }
     const res = await fetch(`${API_BASE_URL}/api/admin/products`, {
       method: "POST",
-      headers: {
+      headers: withAuthorization(token, {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
+      }),
       body: JSON.stringify({
         name,
         price: { amount: Number(price), currency: "KRW" },
@@ -41,8 +41,7 @@ export default function AdminProductNewPage() {
     if (res.ok) {
       router.push("/admin/products");
     } else {
-      const data = await res.json().catch(() => ({}));
-      ui.fail(data?.message || "상품 등록에 실패했습니다.");
+      ui.fail(await parseApiErrorMessage(res, "상품 등록에 실패했습니다."));
     }
 
   };

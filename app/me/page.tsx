@@ -2,6 +2,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "@/lib/stores/auth-store";
 import type { User } from "@/lib/mock-db";
+import { withAuthorization } from "@/lib/client-api";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
@@ -20,7 +21,7 @@ export default function MePage() {
     enabled: initialized && Boolean(token),
     queryFn: async () => {
       const res = await fetch(`${API_BASE_URL}/api/me`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: withAuthorization(token),
       });
       if (!res.ok) throw new Error("사용자 정보를 불러올 수 없습니다.");
       return res.json();
