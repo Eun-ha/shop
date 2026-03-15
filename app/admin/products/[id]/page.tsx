@@ -1,6 +1,6 @@
 "use client";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useAuthStore } from "@/lib/stores/auth-store";
 import { useAsyncUiState } from "@/lib/hooks/useAsyncUiState";
@@ -11,7 +11,6 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
 export default function AdminProductEditPage() {
   const token = useAuthStore((state) => state.token);
   const initialized = useAuthStore((state) => state.initialized);
-  const initialize = useAuthStore((state) => state.initialize);
 
   const router = useRouter();
   const params = useParams();
@@ -22,9 +21,6 @@ export default function AdminProductEditPage() {
   const [status, setStatus] = useState<string | undefined>(undefined);
   const ui = useAsyncUiState();
 
-  useEffect(() => {
-    initialize();
-  }, [initialize]);
 
   const { data: product, isLoading, error: queryError } = useQuery<Product>({
     queryKey: ["admin-product", id, token],

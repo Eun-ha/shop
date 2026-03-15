@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/stores/auth-store";
 import { useAsyncUiState } from "@/lib/hooks/useAsyncUiState";
@@ -9,7 +9,6 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
 export default function AdminProductNewPage() {
   const token = useAuthStore((state) => state.token);
   const initialized = useAuthStore((state) => state.initialized);
-  const initialize = useAuthStore((state) => state.initialize);
 
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
@@ -18,9 +17,6 @@ export default function AdminProductNewPage() {
   const ui = useAsyncUiState();
   const router = useRouter();
 
-  useEffect(() => {
-    initialize();
-  }, [initialize]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -1,7 +1,6 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 import { useAsyncUiState } from "@/lib/hooks/useAsyncUiState";
 import { useAuthStore } from "@/lib/stores/auth-store";
 
@@ -15,14 +14,10 @@ interface BuyNowButtonProps {
 export default function BuyNowButton({ productId, quantity }: BuyNowButtonProps) {
   const token = useAuthStore((state) => state.token);
   const initialized = useAuthStore((state) => state.initialized);
-  const initialize = useAuthStore((state) => state.initialize);
 
   const router = useRouter();
   const ui = useAsyncUiState();
 
-  useEffect(() => {
-    initialize();
-  }, [initialize]);
 
   const handleBuyNow = async () => {
     if (!initialized || !token) {
