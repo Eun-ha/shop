@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useAsyncUiState } from "@/lib/hooks/useAsyncUiState";
 import { useAuthStore } from "@/lib/stores/auth-store";
-import { parseApiErrorMessage, withAuthorization } from "@/lib/client-api";
+import { parseApiErrorMessage } from "@/lib/client-api";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
@@ -13,7 +13,7 @@ interface BuyNowButtonProps {
 }
 
 export default function BuyNowButton({ productId, quantity }: BuyNowButtonProps) {
-  const token = useAuthStore((state) => state.token);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const initialized = useAuthStore((state) => state.initialized);
 
   const router = useRouter();
@@ -21,7 +21,7 @@ export default function BuyNowButton({ productId, quantity }: BuyNowButtonProps)
 
 
   const handleBuyNow = async () => {
-    if (!initialized || !token) {
+    if (!initialized || !isAuthenticated) {
       ui.fail("로그인이 필요합니다.");
       return;
     }
@@ -31,9 +31,7 @@ export default function BuyNowButton({ productId, quantity }: BuyNowButtonProps)
     try {
       const res = await fetch(`${API_BASE_URL}/api/buy-now`, {
         method: "POST",
-        headers: withAuthorization(token, {
-          "Content-Type": "application/json",
-        }),
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ productId, quantity }),
       });
 

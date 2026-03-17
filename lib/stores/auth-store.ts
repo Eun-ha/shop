@@ -3,31 +3,30 @@
 import { create } from "@/lib/vendor/zustand";
 
 type AuthStore = {
-  token: string | null;
+  isAuthenticated: boolean;
   initialized: boolean;
-  initialize: () => void;
-  setToken: (token: string) => void;
-  clearToken: () => void;
+  initialize: () => Promise<void>;
+  setAuthenticated: (authenticated: boolean) => void;
+  clearAuth: () => void;
 };
 
 export const useAuthStore = create<AuthStore>((set) => ({
-  token: null,
+  isAuthenticated: false,
   initialized: false,
-  initialize: () => {
+  initialize: async () => {
     if (typeof window === "undefined") return;
-    const token = window.localStorage.getItem("token");
-    set({ token, initialized: true });
-  },
-  setToken: (token) => {
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem("token", token);
+
+    try {
+      const res = await fetch("/api/auth/session", { cache: "no-store" });
+      set({ isAuthenticated: res.ok, initialized: true });
+    } catch {
+      set({ isAuthenticated: false, initialized: true });
     }
-    set({ token });
   },
-  clearToken: () => {
-    if (typeof window !== "undefined") {
-      window.localStorage.removeItem("token");
-    }
-    set({ token: null });
+  setAuthenticated: (authenticated) => {
+    set({ isAuthenticated: authenticated });
+  },
+  clearAuth: () => {
+    set({ isAuthenticated: false });
   },
 }));

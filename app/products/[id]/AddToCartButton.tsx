@@ -3,7 +3,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAsyncUiState } from "@/lib/hooks/useAsyncUiState";
 import { useAuthStore } from "@/lib/stores/auth-store";
-import { parseApiErrorMessage, withAuthorization } from "@/lib/client-api";
+import { parseApiErrorMessage } from "@/lib/client-api";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
@@ -13,7 +13,7 @@ interface AddToCartButtonProps {
 }
 
 export default function AddToCartButton({ productId, quantity }: AddToCartButtonProps) {
-  const token = useAuthStore((state) => state.token);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const initialized = useAuthStore((state) => state.initialized);
   const queryClient = useQueryClient();
 
@@ -21,15 +21,13 @@ export default function AddToCartButton({ productId, quantity }: AddToCartButton
 
   const addToCartMutation = useMutation({
     mutationFn: async () => {
-      if (!initialized || !token) {
+      if (!initialized || !isAuthenticated) {
         throw new Error("LOGIN_REQUIRED");
       }
 
       const res = await fetch(`${API_BASE_URL}/api/cart`, {
         method: "POST",
-        headers: withAuthorization(token, {
-          "Content-Type": "application/json",
-        }),
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ productId, quantity }),
       });
 
@@ -42,8 +40,8 @@ export default function AddToCartButton({ productId, quantity }: AddToCartButton
     },
     onSuccess: () => {
       ui.succeed("장바구니에 담았습니다.");
-      if (token) {
-        queryClient.invalidateQueries({ queryKey: ["cart", token] });
+      if (isAuthenticated) {
+        queryClient.invalidateQueries({ queryKey: ["cart", isAuthenticated] });
       }
     },
     onError: (error) => {

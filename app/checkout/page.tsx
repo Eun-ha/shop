@@ -7,7 +7,7 @@ import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "@/lib/stores/auth-store";
 import { useCheckoutState } from "./useCheckoutState";
-import { parseApiErrorMessage, withAuthorization } from "@/lib/client-api";
+import { parseApiErrorMessage } from "@/lib/client-api";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
@@ -20,7 +20,7 @@ export default function CheckoutPage() {
   const isBuyNowMode = searchParams.get("mode") === "buy-now";
   const buyNowIntentId = searchParams.get("intentId") || "";
 
-  const token = useAuthStore((state) => state.token);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const initialized = useAuthStore((state) => state.initialized);
 
   const { address, error, success, ordered, submitting, setAddressField, startSubmit, setSubmitError, setSubmitSuccess, resetMessages } =
@@ -28,11 +28,10 @@ export default function CheckoutPage() {
 
 
   const cartQuery = useQuery<Cart>({
-    queryKey: ["checkout-cart", token],
-    enabled: initialized && Boolean(token) && !isBuyNowMode,
+    queryKey: ["checkout-cart", isAuthenticated],
+    enabled: initialized && isAuthenticated && !isBuyNowMode,
     queryFn: async () => {
       const res = await fetch(`${API_BASE_URL}/api/cart`, {
-        headers: withAuthorization(token),
         cache: "no-store",
       });
       if (!res.ok) throw new Error("장바구니를 불러올 수 없습니다.");
@@ -42,11 +41,10 @@ export default function CheckoutPage() {
   });
 
   const buyNowQuery = useQuery<{ item: CartItem }>({
-    queryKey: ["checkout-buy-now", buyNowIntentId, token],
-    enabled: initialized && Boolean(token) && isBuyNowMode && Boolean(buyNowIntentId),
+    queryKey: ["checkout-buy-now", buyNowIntentId, isAuthenticated],
+    enabled: initialized && isAuthenticated && isBuyNowMode && Boolean(buyNowIntentId),
     queryFn: async () => {
       const res = await fetch(`${API_BASE_URL}/api/buy-now/${encodeURIComponent(buyNowIntentId)}`, {
-        headers: withAuthorization(token),
         cache: "no-store",
       });
       if (!res.ok) throw new Error("바로구매 상품을 불러올 수 없습니다.");
@@ -70,7 +68,7 @@ export default function CheckoutPage() {
     e.preventDefault();
     resetMessages();
 
-    if (!token) {
+    if (!isAuthenticated) {
       setSubmitError("로그인이 필요합니다.");
       return;
     }
@@ -94,9 +92,9 @@ export default function CheckoutPage() {
     try {
       const res = await fetch(`${API_BASE_URL}/api/checkout`, {
         method: "POST",
-        headers: withAuthorization(token, {
+        headers: {
           "Content-Type": "application/json",
-        }),
+        },
         body: JSON.stringify(body),
       });
 
@@ -164,7 +162,7 @@ export default function CheckoutPage() {
   const loading = !initialized || cartQuery.isLoading || buyNowQuery.isLoading;
   if (loading) return <div className="py-16 text-center text-zinc-500">로딩 중...</div>;
 
-  if (!token) return <div className="max-w-2xl mx-auto py-16 text-center text-red-500">로그인이 필요합니다.</div>;
+  if (!isAuthenticated) return <div className="max-w-2xl mx-auto py-16 text-center text-red-500">로그인이 필요합니다.</div>;
   if (isBuyNowMode && !buyNowIntentId) return <div className="max-w-2xl mx-auto py-16 text-center text-red-500">바로구매 정보가 없습니다. 다시 시도해 주세요.</div>;
 
   const queryError = isBuyNowMode ? buyNowQuery.error : cartQuery.error;

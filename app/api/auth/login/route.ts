@@ -1,6 +1,5 @@
 import { parseJson, fail, ok } from "@/lib/http";
-import { findUserByEmail } from "@/lib/auth";
-import { signAccessToken } from "@/lib/auth";
+import { findUserByEmail, signAccessToken, ACCESS_TOKEN_COOKIE, ACCESS_TOKEN_MAX_AGE } from "@/lib/auth";
 
 type Body = { email: string; password: string };
 
@@ -11,11 +10,22 @@ export async function POST(req: Request) {
   }
 
   const record = findUserByEmail(body.email);
-  
+
   if (!record || record.password !== body.password) {
     return fail("UNAUTHORIZED", "Invalid credentials", 401);
   }
 
   const accessToken = signAccessToken(record.user);
-  return ok({ accessToken, user: record.user });
+  const response = ok({ user: record.user });
+  response.cookies.set({
+    name: ACCESS_TOKEN_COOKIE,
+    value: accessToken,
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: ACCESS_TOKEN_MAX_AGE,
+  });
+
+  return response;
 }
