@@ -3,12 +3,12 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/stores/auth-store";
 import { useAsyncUiState } from "@/lib/hooks/useAsyncUiState";
-import { parseApiErrorMessage, withAuthorization } from "@/lib/client-api";
+import { parseApiErrorMessage } from "@/lib/client-api";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
 export default function AdminProductNewPage() {
-  const token = useAuthStore((state) => state.token);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const initialized = useAuthStore((state) => state.initialized);
 
   const [name, setName] = useState("");
@@ -22,15 +22,15 @@ export default function AdminProductNewPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     ui.start();
-    if (!initialized || !token) {
+    if (!initialized || !isAuthenticated) {
       ui.fail("관리자 로그인이 필요합니다.");
       return;
     }
     const res = await fetch(`${API_BASE_URL}/api/admin/products`, {
       method: "POST",
-      headers: withAuthorization(token, {
+      headers: {
         "Content-Type": "application/json",
-      }),
+      },
       body: JSON.stringify({
         name,
         price: { amount: Number(price), currency: "KRW" },

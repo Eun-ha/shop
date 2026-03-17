@@ -6,7 +6,7 @@ import { useAuthStore } from "@/lib/stores/auth-store";
 import { parseApiErrorMessage } from "@/lib/client-api";
 
 export function useLoginForm() {
-  const setToken = useAuthStore((state) => state.setToken);
+  const setAuthenticated = useAuthStore((state) => state.setAuthenticated);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const ui = useAsyncUiState();
@@ -22,8 +22,7 @@ export function useLoginForm() {
     });
 
     if (res.ok) {
-      const data = await res.json();
-      setToken(data.accessToken);
+      setAuthenticated(true);
       ui.succeed();
       window.location.href = "/";
       return;

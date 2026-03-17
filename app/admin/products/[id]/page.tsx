@@ -5,12 +5,12 @@ import { useRouter, useParams } from "next/navigation";
 import { useAuthStore } from "@/lib/stores/auth-store";
 import { useAsyncUiState } from "@/lib/hooks/useAsyncUiState";
 import type { Product } from "@/lib/mock-db";
-import { parseApiErrorMessage, withAuthorization } from "@/lib/client-api";
+import { parseApiErrorMessage } from "@/lib/client-api";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
 export default function AdminProductEditPage() {
-  const token = useAuthStore((state) => state.token);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const initialized = useAuthStore((state) => state.initialized);
 
   const router = useRouter();
@@ -22,14 +22,11 @@ export default function AdminProductEditPage() {
   const [status, setStatus] = useState<string | undefined>(undefined);
   const ui = useAsyncUiState();
 
-
   const { data: product, isLoading, error: queryError } = useQuery<Product>({
-    queryKey: ["admin-product", id, token],
-    enabled: initialized && Boolean(token) && Boolean(id),
+    queryKey: ["admin-product", id, isAuthenticated],
+    enabled: initialized && isAuthenticated && Boolean(id),
     queryFn: async () => {
-      const res = await fetch(`${API_BASE_URL}/api/admin/products/${id}`, {
-        headers: withAuthorization(token),
-      });
+      const res = await fetch(`${API_BASE_URL}/api/admin/products/${id}`);
       if (!res.ok) throw new Error("상품 정보를 불러올 수 없습니다.");
       return res.json();
     },
@@ -44,15 +41,15 @@ export default function AdminProductEditPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     ui.start();
-    if (!initialized || !token) {
+    if (!initialized || !isAuthenticated) {
       ui.fail("관리자 로그인이 필요합니다.");
       return;
     }
     const res = await fetch(`${API_BASE_URL}/api/admin/products/${id}`, {
       method: "PATCH",
-      headers: withAuthorization(token, {
+      headers: {
         "Content-Type": "application/json",
-      }),
+      },
       body: JSON.stringify({
         name: resolvedName,
         price: { amount: Number(resolvedPrice), currency: "KRW" },
@@ -70,13 +67,12 @@ export default function AdminProductEditPage() {
   const handleDelete = async () => {
     if (!window.confirm("정말 삭제하시겠습니까?")) return;
     ui.start();
-    if (!initialized || !token) {
+    if (!initialized || !isAuthenticated) {
       ui.fail("관리자 로그인이 필요합니다.");
       return;
     }
     const res = await fetch(`${API_BASE_URL}/api/admin/products/${id}`, {
       method: "DELETE",
-      headers: withAuthorization(token),
     });
     if (res.ok) {
       router.push("/admin/products");
@@ -86,7 +82,7 @@ export default function AdminProductEditPage() {
   };
 
   if (!initialized || isLoading) return <div className="py-16 text-center text-zinc-500">로딩 중...</div>;
-  if (!token) return <div className="py-16 text-center text-red-500">관리자 로그인이 필요합니다.</div>;
+  if (!isAuthenticated) return <div className="py-16 text-center text-red-500">관리자 로그인이 필요합니다.</div>;
   if (queryError) return <div className="py-16 text-center text-red-500">상품 정보를 불러올 수 없습니다.</div>;
   if (!product) return null;
 

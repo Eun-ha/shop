@@ -3,7 +3,6 @@ import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useAuthStore } from "@/lib/stores/auth-store";
 import type { Product } from "@/lib/mock-db";
-import { withAuthorization } from "@/lib/client-api";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
@@ -12,17 +11,14 @@ type ProductsResponse = {
 };
 
 export default function AdminProductsPage() {
-  const token = useAuthStore((state) => state.token);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const initialized = useAuthStore((state) => state.initialized);
 
-
   const { data, isLoading, error } = useQuery<ProductsResponse>({
-    queryKey: ["admin-products", token],
-    enabled: initialized && Boolean(token),
+    queryKey: ["admin-products", isAuthenticated],
+    enabled: initialized && isAuthenticated,
     queryFn: async () => {
-      const res = await fetch(`${API_BASE_URL}/api/admin/products`, {
-        headers: withAuthorization(token),
-      });
+      const res = await fetch(`${API_BASE_URL}/api/admin/products`);
       if (!res.ok) throw new Error("상품 목록을 불러올 수 없습니다.");
       return res.json();
     },
@@ -32,7 +28,7 @@ export default function AdminProductsPage() {
   const products = data?.items || [];
 
   if (!initialized || isLoading) return <div className="py-16 text-center text-zinc-500">로딩 중...</div>;
-  if (!token) return <div className="py-16 text-center text-red-500">관리자 로그인이 필요합니다.</div>;
+  if (!isAuthenticated) return <div className="py-16 text-center text-red-500">관리자 로그인이 필요합니다.</div>;
   if (error) return <div className="py-16 text-center text-red-500">상품 목록을 불러올 수 없습니다.</div>;
 
   return (

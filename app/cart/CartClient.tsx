@@ -5,26 +5,23 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import type { Cart } from "@/lib/mock-db";
 import { useAuthStore } from "@/lib/stores/auth-store";
-import { withAuthorization } from "@/lib/client-api";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
 export default function CartClient() {
   const router = useRouter();
-  const token = useAuthStore((state) => state.token);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const initialized = useAuthStore((state) => state.initialized);
-
 
   const {
     data: cart,
     isLoading,
     error,
   } = useQuery<Cart>({
-    queryKey: ["cart", token],
-    enabled: initialized && Boolean(token),
+    queryKey: ["cart", isAuthenticated],
+    enabled: initialized && isAuthenticated,
     queryFn: async () => {
       const res = await fetch(`${API_BASE_URL}/api/cart`, {
-        headers: withAuthorization(token),
         cache: "no-store",
       });
       if (!res.ok) throw new Error("장바구니를 불러올 수 없습니다.");
@@ -34,7 +31,7 @@ export default function CartClient() {
   });
 
   if (!initialized || isLoading) return <div className="max-w-2xl mx-auto py-16 text-center text-zinc-500">로딩 중...</div>;
-  if (!token) return <div className="max-w-2xl mx-auto py-16 text-center text-red-500">로그인이 필요합니다.</div>;
+  if (!isAuthenticated) return <div className="max-w-2xl mx-auto py-16 text-center text-red-500">로그인이 필요합니다.</div>;
   if (error) return <div className="max-w-2xl mx-auto py-16 text-center text-red-500">장바구니를 불러올 수 없습니다.</div>;
   if (!cart || cart.items.length === 0) {
     return <div className="max-w-2xl mx-auto py-16 text-center text-zinc-500">장바구니가 비어 있습니다.</div>;

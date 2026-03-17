@@ -1,14 +1,3 @@
-export function withAuthorization(token: string | null | undefined, headers: HeadersInit = {}): HeadersInit {
-  if (!token) {
-    return { ...headers };
-  }
-
-  return {
-    ...headers,
-    Authorization: `Bearer ${token}`,
-  };
-}
-
 type ApiErrorResponse = {
   message?: string;
 };
