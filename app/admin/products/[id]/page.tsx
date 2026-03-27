@@ -1,5 +1,5 @@
 "use client";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useAuthStore } from "@/lib/stores/auth-store";
@@ -38,48 +38,95 @@ export default function AdminProductEditPage() {
   const resolvedStock = stock ?? product?.stock?.toString() ?? "";
   const resolvedStatus = status ?? product?.status ?? "ACTIVE";
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    ui.start();
-    if (!initialized || !isAuthenticated) {
-      ui.fail("관리자 로그인이 필요합니다.");
-      return;
-    }
-    const res = await fetch(`${API_BASE_URL}/api/admin/products/${id}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        name: resolvedName,
-        price: { amount: Number(resolvedPrice), currency: "KRW" },
-        stock: Number(resolvedStock),
-        status: resolvedStatus,
-      }),
-    });
-    if (res.ok) {
+  const updateMutation = useMutation({
+    mutationFn: async () => {
+      if (!initialized || !isAuthenticated) {
+        throw new Error("LOGIN_REQUIRED");
+      }
+
+      const res = await fetch(`${API_BASE_URL}/api/admin/products/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: resolvedName,
+          price: { amount: Number(resolvedPrice), currency: "KRW" },
+          stock: Number(resolvedStock),
+          status: resolvedStatus,
+        }),
+      });
+      if (!res.ok) {
+        throw new Error(await parseApiErrorMessage(res, "상품 수정에 실패했습니다."));
+      }
+      return res.json();
+    },
+    onMutate: () => {
+      ui.start();
+    },
+    onSuccess: () => {
       router.push("/admin/products");
-    } else {
-      ui.fail(await parseApiErrorMessage(res, "상품 수정에 실패했습니다."));
-    }
+    },
+    onError: error => {
+      if (error instanceof Error && error.message === "LOGIN_REQUIRED") {
+        ui.fail("관리자 로그인이 필요합니다.");
+        return;
+      }
+
+      if (error instanceof Error) {
+        ui.fail(error.message);
+        return;
+      }
+
+      ui.fail("네트워크 오류가 발생했습니다.");
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async () => {
+      if (!initialized || !isAuthenticated) {
+        throw new Error("LOGIN_REQUIRED");
+      }
+
+      const res = await fetch(`${API_BASE_URL}/api/admin/products/${id}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        throw new Error(await parseApiErrorMessage(res, "상품 삭제에 실패했습니다."));
+      }
+    },
+    onMutate: () => {
+      ui.start();
+    },
+    onSuccess: () => {
+      router.push("/admin/products");
+    },
+    onError: error => {
+      if (error instanceof Error && error.message === "LOGIN_REQUIRED") {
+        ui.fail("관리자 로그인이 필요합니다.");
+        return;
+      }
+
+      if (error instanceof Error) {
+        ui.fail(error.message);
+        return;
+      }
+
+      ui.fail("네트워크 오류가 발생했습니다.");
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    updateMutation.mutate();
   };
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     if (!window.confirm("정말 삭제하시겠습니까?")) return;
-    ui.start();
-    if (!initialized || !isAuthenticated) {
-      ui.fail("관리자 로그인이 필요합니다.");
-      return;
-    }
-    const res = await fetch(`${API_BASE_URL}/api/admin/products/${id}`, {
-      method: "DELETE",
-    });
-    if (res.ok) {
-      router.push("/admin/products");
-    } else {
-      ui.fail(await parseApiErrorMessage(res, "상품 삭제에 실패했습니다."));
-    }
+    deleteMutation.mutate();
   };
+
+  const isMutating = updateMutation.isPending || deleteMutation.isPending;
 
   if (!initialized || isLoading) return <div className="py-16 text-center text-zinc-500">로딩 중...</div>;
   if (!isAuthenticated) return <div className="py-16 text-center text-red-500">관리자 로그인이 필요합니다.</div>;
@@ -100,10 +147,10 @@ export default function AdminProductEditPage() {
           <option value="SOLD_OUT">품절</option>
         </select>
         <div className="flex gap-2 mt-4">
-          <button type="submit" className="px-8 py-3 rounded bg-blue-600 text-white font-semibold hover:bg-blue-700 transition" disabled={ui.loading}>
-            {ui.loading ? "수정 중..." : "상품 수정"}
+          <button type="submit" className="px-8 py-3 rounded bg-blue-600 text-white font-semibold hover:bg-blue-700 transition" disabled={ui.loading || isMutating}>
+            {ui.loading || isMutating ? "수정 중..." : "상품 수정"}
           </button>
-          <button type="button" className="px-8 py-3 rounded bg-red-500 text-white font-semibold hover:bg-red-600 transition" onClick={handleDelete} disabled={ui.loading}>
+          <button type="button" className="px-8 py-3 rounded bg-red-500 text-white font-semibold hover:bg-red-600 transition" onClick={handleDelete} disabled={ui.loading || isMutating}>
             삭제
           </button>
         </div>
