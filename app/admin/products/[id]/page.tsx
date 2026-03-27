@@ -40,6 +40,10 @@ export default function AdminProductEditPage() {
 
   const updateMutation = useMutation({
     mutationFn: async () => {
+      if (!initialized || !isAuthenticated) {
+        throw new Error("LOGIN_REQUIRED");
+      }
+
       const res = await fetch(`${API_BASE_URL}/api/admin/products/${id}`, {
         method: "PATCH",
         headers: {
@@ -57,16 +61,33 @@ export default function AdminProductEditPage() {
       }
       return res.json();
     },
+    onMutate: () => {
+      ui.start();
+    },
     onSuccess: () => {
       router.push("/admin/products");
     },
     onError: error => {
-      ui.fail(error instanceof Error ? error.message : "상품 수정에 실패했습니다.");
+      if (error instanceof Error && error.message === "LOGIN_REQUIRED") {
+        ui.fail("관리자 로그인이 필요합니다.");
+        return;
+      }
+
+      if (error instanceof Error) {
+        ui.fail(error.message);
+        return;
+      }
+
+      ui.fail("네트워크 오류가 발생했습니다.");
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: async () => {
+      if (!initialized || !isAuthenticated) {
+        throw new Error("LOGIN_REQUIRED");
+      }
+
       const res = await fetch(`${API_BASE_URL}/api/admin/products/${id}`, {
         method: "DELETE",
       });
@@ -74,32 +95,35 @@ export default function AdminProductEditPage() {
         throw new Error(await parseApiErrorMessage(res, "상품 삭제에 실패했습니다."));
       }
     },
+    onMutate: () => {
+      ui.start();
+    },
     onSuccess: () => {
       router.push("/admin/products");
     },
     onError: error => {
-      ui.fail(error instanceof Error ? error.message : "상품 삭제에 실패했습니다.");
+      if (error instanceof Error && error.message === "LOGIN_REQUIRED") {
+        ui.fail("관리자 로그인이 필요합니다.");
+        return;
+      }
+
+      if (error instanceof Error) {
+        ui.fail(error.message);
+        return;
+      }
+
+      ui.fail("네트워크 오류가 발생했습니다.");
     },
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!initialized || !isAuthenticated) {
-      ui.fail("관리자 로그인이 필요합니다.");
-      return;
-    }
-    ui.start();
-    await updateMutation.mutateAsync();
+    updateMutation.mutate();
   };
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     if (!window.confirm("정말 삭제하시겠습니까?")) return;
-    if (!initialized || !isAuthenticated) {
-      ui.fail("관리자 로그인이 필요합니다.");
-      return;
-    }
-    ui.start();
-    await deleteMutation.mutateAsync();
+    deleteMutation.mutate();
   };
 
   const isMutating = updateMutation.isPending || deleteMutation.isPending;
@@ -123,10 +147,10 @@ export default function AdminProductEditPage() {
           <option value="SOLD_OUT">품절</option>
         </select>
         <div className="flex gap-2 mt-4">
-          <button type="submit" className="px-8 py-3 rounded bg-blue-600 text-white font-semibold hover:bg-blue-700 transition" disabled={isMutating}>
-            {isMutating ? "수정 중..." : "상품 수정"}
+          <button type="submit" className="px-8 py-3 rounded bg-blue-600 text-white font-semibold hover:bg-blue-700 transition" disabled={ui.loading || isMutating}>
+            {ui.loading || isMutating ? "수정 중..." : "상품 수정"}
           </button>
-          <button type="button" className="px-8 py-3 rounded bg-red-500 text-white font-semibold hover:bg-red-600 transition" onClick={handleDelete} disabled={isMutating}>
+          <button type="button" className="px-8 py-3 rounded bg-red-500 text-white font-semibold hover:bg-red-600 transition" onClick={handleDelete} disabled={ui.loading || isMutating}>
             삭제
           </button>
         </div>
