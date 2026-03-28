@@ -23,7 +23,13 @@ npm ci
 npx prisma migrate deploy
 ```
 
-4. (Optional) Validate Prisma config/schema.
+4. Seed default users (dev/admin).
+
+```bash
+npm run db:seed  # prisma generate 포함
+```
+
+5. (Optional) Validate Prisma config/schema.
 
 ```bash
 npx prisma validate
