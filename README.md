@@ -2,6 +2,35 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
+### PostgreSQL + Prisma setup
+
+1. Copy environment variables.
+
+```bash
+cp .env.example .env
+```
+
+2. Start PostgreSQL (Docker).
+
+```bash
+docker compose up -d postgres
+```
+
+3. Install dependencies and apply migrations.
+
+```bash
+npm ci
+npx prisma migrate deploy
+```
+
+4. (Optional) Validate Prisma config/schema.
+
+```bash
+npx prisma validate
+```
+
+### Run app
+
 First, run the development server:
 
 ```bash
