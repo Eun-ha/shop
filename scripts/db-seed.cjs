@@ -33,7 +33,9 @@ function hasOfflineEngineError(result) {
   return OFFLINE_ENGINE_PATTERNS.some((pattern) => output.includes(pattern));
 }
 
-const generate = run('npx', ['prisma', 'generate']);
+const generate = run('npx', ['prisma', 'generate'], {
+  PRISMA_CLIENT_ENGINE_TYPE: 'binary',
+});
 if (generate.status !== 0 && hasOfflineEngineError(generate)) {
   console.warn('[db:seed] Prisma engine download failed in this environment. Skipping seed without failing.');
   process.exit(0);
