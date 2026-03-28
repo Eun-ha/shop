@@ -1,13 +1,12 @@
 import { ok, fail } from "@/lib/http";
-import { requireAuth } from "@/lib/auth";
-import { users } from "@/lib/mock-db";
+import { requireAuth, findUserById, toPublicUser } from "@/lib/auth";
 
 export async function GET(req: Request) {
   const auth = requireAuth(req);
   if (!auth) return fail("UNAUTHORIZED", "Unauthorized", 401);
 
-  const record = users.get(auth.email);
-  if (!record) return fail("UNAUTHORIZED", "Unauthorized", 401);
+  const user = await findUserById(auth.sub);
+  if (!user) return fail("UNAUTHORIZED", "Unauthorized", 401);
 
-  return ok(record.user);
+  return ok(toPublicUser(user));
 }

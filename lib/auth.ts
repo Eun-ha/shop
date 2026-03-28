@@ -1,6 +1,12 @@
 import jwt from "jsonwebtoken";
-import { users } from "./mock-db";
-import type { User } from "./mock-db";
+import { prisma } from "./prisma";
+
+type DbUser = {
+  id: string;
+  email: string;
+  name: string | null;
+  role: string;
+};
 
 const JWT_SECRET = process.env.JWT_SECRET || "dev-secret-change-me";
 
@@ -9,8 +15,21 @@ export const ACCESS_TOKEN_MAX_AGE = 60 * 60 * 2;
 
 export type AuthPayload = { sub: string; email: string; role: "USER" | "ADMIN" };
 
-export function signAccessToken(user: User) {
-  const payload: AuthPayload = { sub: user.id, email: user.email, role: user.role };
+function normalizeRole(role: string): "USER" | "ADMIN" {
+  return role === "ADMIN" ? "ADMIN" : "USER";
+}
+
+export function toPublicUser(user: DbUser) {
+  return {
+    id: user.id,
+    email: user.email,
+    name: user.name ?? undefined,
+    role: normalizeRole(user.role),
+  };
+}
+
+export function signAccessToken(user: DbUser) {
+  const payload: AuthPayload = { sub: user.id, email: user.email, role: normalizeRole(user.role) };
   return jwt.sign(payload, JWT_SECRET, { expiresIn: "2h" });
 }
 
@@ -47,6 +66,10 @@ export function requireAuth(req: Request) {
   return verifyAccessToken(token);
 }
 
-export function findUserByEmail(email: string) {
-  return users.get(email) ?? null;
+export async function findUserByEmail(email: string) {
+  return prisma.user.findUnique({ where: { email: email.trim().toLowerCase() } });
+}
+
+export async function findUserById(id: string) {
+  return prisma.user.findUnique({ where: { id } });
 }
