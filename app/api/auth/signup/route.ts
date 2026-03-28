@@ -1,5 +1,7 @@
 import { created, fail, parseJson } from "@/lib/http";
-import { users } from "@/lib/mock-db";
+import { prisma } from "@/lib/prisma";
+import { hashPassword } from "@/lib/password";
+import { toPublicUser } from "@/lib/auth";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -23,18 +25,19 @@ export async function POST(req: Request) {
     return fail("INVALID_REQUEST", "Password must be at least 8 characters", 400);
   }
 
-  if (users.has(email)) {
+  const existingUser = await prisma.user.findUnique({ where: { email } });
+  if (existingUser) {
     return fail("INVALID_REQUEST", "Email already exists", 409);
   }
 
-  const user = {
-    id: `user_${Math.random().toString(16).slice(2, 10)}`,
-    email,
-    name: name || undefined,
-    role: "USER" as const,
-  };
+  const user = await prisma.user.create({
+    data: {
+      email,
+      name: name || null,
+      passwordHash: hashPassword(password),
+      role: "USER",
+    },
+  });
 
-  users.set(email, { user, password });
-
-  return created({ user });
+  return created({ user: toPublicUser(user) });
 }

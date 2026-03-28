@@ -1,5 +1,6 @@
 import { parseJson, fail, ok } from "@/lib/http";
-import { findUserByEmail, signAccessToken, ACCESS_TOKEN_COOKIE, ACCESS_TOKEN_MAX_AGE } from "@/lib/auth";
+import { findUserByEmail, signAccessToken, ACCESS_TOKEN_COOKIE, ACCESS_TOKEN_MAX_AGE, toPublicUser } from "@/lib/auth";
+import { verifyPassword } from "@/lib/password";
 
 type Body = { email: string; password: string };
 
@@ -9,14 +10,14 @@ export async function POST(req: Request) {
     return fail("INVALID_REQUEST", "email and password are required", 400);
   }
 
-  const record = findUserByEmail(body.email);
+  const user = await findUserByEmail(body.email);
 
-  if (!record || record.password !== body.password) {
+  if (!user || !verifyPassword(body.password, user.passwordHash)) {
     return fail("UNAUTHORIZED", "Invalid credentials", 401);
   }
 
-  const accessToken = signAccessToken(record.user);
-  const response = ok({ user: record.user });
+  const accessToken = signAccessToken(user);
+  const response = ok({ user: toPublicUser(user) });
   response.cookies.set({
     name: ACCESS_TOKEN_COOKIE,
     value: accessToken,
