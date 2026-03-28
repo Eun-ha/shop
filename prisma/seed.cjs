@@ -1,7 +1,7 @@
 const { PrismaClient } = require("@prisma/client");
 const { randomBytes, scryptSync } = require("node:crypto");
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({});
 const KEY_LENGTH = 64;
 
 function hashPassword(password) {
