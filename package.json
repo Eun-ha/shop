@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "db:seed": "node scripts/db-seed.cjs"
+    "db:seed": "prisma generate && prisma db seed"
   },
   "dependencies": {
     "@prisma/client": "^7.6.0",

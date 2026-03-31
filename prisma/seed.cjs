@@ -15,6 +15,7 @@ async function main() {
     where: { email: "dev@example.com" },
     update: {
       name: "Dev",
+      passwordHash: hashPassword("password1234"),
       role: "USER",
     },
     create: {
@@ -30,6 +31,7 @@ async function main() {
     where: { email: "admin@example.com" },
     update: {
       name: "Admin",
+      passwordHash: hashPassword("password1234"),
       role: "ADMIN",
     },
     create: {
