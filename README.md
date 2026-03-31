@@ -20,6 +20,7 @@ docker compose up -d postgres
 
 ```bash
 npm ci
+npx prisma generate
 npx prisma migrate deploy
 ```
 
