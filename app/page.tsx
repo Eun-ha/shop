@@ -1,5 +1,5 @@
 import ProductCard from "@/components/ProductCard";
-import type { Product } from "@/lib/mock-db";
+import type { Product } from "@/lib/product";
 
 
 
