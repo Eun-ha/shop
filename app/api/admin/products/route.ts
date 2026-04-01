@@ -1,7 +1,7 @@
 import { created, fail, parseJson } from "@/lib/http";
 import { requireAuth } from "@/lib/auth";
-import { products } from "@/lib/mock-db";
-import type { Product } from "@/lib/mock-db";
+import { prisma } from "@/lib/prisma";
+import { toProductDto, type Product, type ProductStatus } from "@/lib/product";
 
 type Body = Omit<Product, "id" | "createdAt" | "updatedAt">;
 
@@ -10,7 +10,8 @@ export async function GET(req: Request) {
   if (!auth) return fail("UNAUTHORIZED", "Unauthorized", 401);
   if (auth.role !== "ADMIN") return fail("FORBIDDEN", "Forbidden", 403);
 
-  return Response.json({ items: Array.from(products.values()) });
+  const items = await prisma.product.findMany({ orderBy: { createdAt: "desc" } });
+  return Response.json({ items: items.map(toProductDto) });
 }
 
 export async function POST(req: Request) {
@@ -23,25 +24,20 @@ export async function POST(req: Request) {
     return fail("INVALID_REQUEST", "name, price, status are required", 400);
   }
 
-  const id = `prod_${Math.random().toString(16).slice(2)}`;
-  const now = new Date().toISOString();
+  const product = await prisma.product.create({
+    data: {
+      name: body.name,
+      description: body.description ?? null,
+      thumbnailUrl: body.thumbnailUrl ?? null,
+      images: body.images ?? [],
+      priceAmount: body.price.amount,
+      compareAtPriceAmount: body.compareAtPrice?.amount ?? null,
+      category: body.category ?? null,
+      tags: body.tags ?? [],
+      stock: body.stock ?? 0,
+      status: body.status as ProductStatus,
+    },
+  });
 
-  const product: Product = {
-    id,
-    createdAt: now,
-    updatedAt: now,
-    description: body.description,
-    thumbnailUrl: body.thumbnailUrl,
-    images: body.images ?? [],
-    name: body.name,
-    price: body.price,
-    compareAtPrice: body.compareAtPrice ?? null,
-    category: body.category,
-    tags: body.tags ?? [],
-    stock: body.stock ?? 0,
-    status: body.status,
-  };
-
-  products.set(id, product);
-  return created(product);
+  return created(toProductDto(product));
 }
