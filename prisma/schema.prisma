@@ -49,6 +49,7 @@ model Product {
   createdAt            DateTime      @default(now())
   updatedAt            DateTime      @updatedAt
   cartItems            CartItem[]
+  buyNowIntents        BuyNowIntent[]
 
   @@index([status, createdAt(sort: Desc)])
   @@index([category])
@@ -107,5 +108,19 @@ model OrderItem {
   order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@index([orderId])
+  @@index([productId])
+}
+
+
+model BuyNowIntent {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  quantity  Int
+  createdAt DateTime @default(now())
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt(sort: Desc)])
   @@index([productId])
 }

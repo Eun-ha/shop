@@ -1,6 +1,6 @@
 import { fail, ok, parseJson } from "@/lib/http";
 import { requireAuth } from "@/lib/auth";
-import { buyNowIntents, products } from "@/lib/mock-db";
+import { prisma } from "@/lib/prisma";
 
 type Body = {
   productId: string;
@@ -16,28 +16,27 @@ export async function POST(req: Request) {
     return fail("INVALID_REQUEST", "productId and quantity are required", 400);
   }
 
-  const p = products.get(body.productId);
-  if (!p) return fail("PRODUCT_NOT_FOUND", "Product not found.", 404);
-  if (p.status !== "ACTIVE") return fail("OUT_OF_STOCK", "Product is not for sale.", 409);
+  const product = await prisma.product.findUnique({ where: { id: body.productId } });
+  if (!product) return fail("PRODUCT_NOT_FOUND", "Product not found.", 404);
+  if (product.status !== "ACTIVE") return fail("OUT_OF_STOCK", "Product is not for sale.", 409);
 
   const quantity = Math.max(1, Math.min(99, Number(body.quantity || 0)));
-  if (p.stock < quantity) {
-    return fail("OUT_OF_STOCK", "Insufficient stock.", 409, { stock: p.stock });
+  if (product.stock < quantity) {
+    return fail("OUT_OF_STOCK", "Insufficient stock.", 409, { stock: product.stock });
   }
 
-  const intentId = `intent_${Math.random().toString(16).slice(2)}`;
-  buyNowIntents.set(intentId, {
-    id: intentId,
-    userId: auth.sub,
-    productId: p.id,
-    quantity,
-    createdAt: new Date().toISOString(),
+  const intent = await prisma.buyNowIntent.create({
+    data: {
+      userId: auth.sub,
+      productId: product.id,
+      quantity,
+    },
   });
 
-  const checkoutUrl = `/checkout?mode=buy-now&intentId=${encodeURIComponent(intentId)}`;
+  const checkoutUrl = `/checkout?mode=buy-now&intentId=${encodeURIComponent(intent.id)}`;
 
   return ok({
     checkoutUrl,
-    intentId,
+    intentId: intent.id,
   });
 }
