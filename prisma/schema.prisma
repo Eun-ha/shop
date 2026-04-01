@@ -18,6 +18,12 @@ enum ProductStatus {
   SOLD_OUT
 }
 
+enum OrderStatus {
+  PENDING
+  PAID
+  CANCELED
+}
+
 model User {
   id           String   @id @default(cuid())
   email        String   @unique
@@ -68,5 +74,38 @@ model CartItem {
 
   @@unique([cartId, productId])
   @@index([cartId])
+  @@index([productId])
+}
+
+model Order {
+  id                 String      @id @default(cuid())
+  userId             String
+  status             OrderStatus @default(PENDING)
+  subtotalAmount     Int
+  shippingName       String
+  shippingPhone      String
+  shippingAddress1   String
+  shippingAddress2   String?
+  shippingCity       String
+  shippingPostalCode String
+  createdAt          DateTime    @default(now())
+  items              OrderItem[]
+
+  @@index([userId, createdAt(sort: Desc)])
+}
+
+model OrderItem {
+  id              String   @id @default(cuid())
+  orderId         String
+  productId       String
+  name            String
+  priceAmount     Int
+  quantity        Int
+  lineTotalAmount Int
+  createdAt       DateTime @default(now())
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
   @@index([productId])
 }

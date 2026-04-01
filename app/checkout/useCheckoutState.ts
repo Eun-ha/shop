@@ -1,7 +1,7 @@
 "use client";
 
 import { useReducer } from "react";
-import type { Order, ShippingAddress } from "@/lib/mock-db";
+import type { Order, ShippingAddress } from "@/lib/order";
 
 type CheckoutState = {
   address: ShippingAddress;
