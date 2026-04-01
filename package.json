@@ -7,7 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "postinstall": "node scripts/prisma-generate.cjs"
+    "postinstall": "node scripts/prisma-generate.cjs",
+    "prisma:generate": "prisma generate",
+    "predev": "npm run prisma:generate",
+    "prebuild": "npm run prisma:generate"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.6.0",

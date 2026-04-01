@@ -1,5 +1,6 @@
 "use client";
-import type { Cart, CartItem, Order } from "@/lib/mock-db";
+import type { Cart, CartItem } from "@/lib/cart";
+import type { Order } from "@/lib/mock-db";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";

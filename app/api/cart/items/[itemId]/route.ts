@@ -1,6 +1,7 @@
 import { ok, fail, parseJson } from "@/lib/http";
 import { requireAuth } from "@/lib/auth";
-import { getOrCreateCart, products, calcSubtotal } from "@/lib/mock-db";
+import { prisma } from "@/lib/prisma";
+import { toCartDto } from "@/lib/cart";
 
 type PatchBody = { quantity: number };
 
@@ -13,23 +14,29 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ itemId: strin
   const qty = body?.quantity;
   if (!qty) return fail("INVALID_REQUEST", "quantity is required", 400);
 
-  const cart = getOrCreateCart(auth.sub);
-  const item = cart.items.find((it) => it.itemId === params.itemId);
-  if (!item) return fail("CART_ITEM_NOT_FOUND", "Cart item not found.", 404);
-
-  const p = products.get(item.productId);
-  if (!p) return fail("PRODUCT_NOT_FOUND", "Product not found.", 404);
+  const item = await prisma.cartItem.findUnique({
+    where: { id: params.itemId },
+    include: {
+      cart: true,
+      product: true,
+    },
+  });
+  if (!item || item.cart.userId !== auth.sub) return fail("CART_ITEM_NOT_FOUND", "Cart item not found.", 404);
 
   const nextQty = Math.max(1, Math.min(99, qty));
-  if (p.stock < nextQty) return fail("OUT_OF_STOCK", "Insufficient stock.", 409, { stock: p.stock });
+  if (item.product.stock < nextQty) return fail("OUT_OF_STOCK", "Insufficient stock.", 409, { stock: item.product.stock });
 
-  item.quantity = nextQty;
-  item.lineTotal = { ...item.lineTotal, amount: item.price.amount * nextQty };
+  await prisma.cartItem.update({
+    where: { id: item.id },
+    data: { quantity: nextQty },
+  });
 
-  cart.subtotal = calcSubtotal(cart.items);
-  cart.updatedAt = new Date().toISOString();
+  const cart = await prisma.cart.findUniqueOrThrow({
+    where: { id: item.cartId },
+    include: { items: { include: { product: true } } },
+  });
 
-  return ok(cart);
+  return ok(toCartDto(cart));
 }
 
 export async function DELETE(req: Request, ctx: { params: Promise<{ itemId: string }> }) {
@@ -37,13 +44,18 @@ export async function DELETE(req: Request, ctx: { params: Promise<{ itemId: stri
   if (!auth) return fail("UNAUTHORIZED", "Unauthorized", 401);
 
   const params = await ctx.params;
-  const cart = getOrCreateCart(auth.sub);
-  const idx = cart.items.findIndex((it) => it.itemId === params.itemId);
-  if (idx === -1) return fail("CART_ITEM_NOT_FOUND", "Cart item not found.", 404);
+  const item = await prisma.cartItem.findUnique({
+    where: { id: params.itemId },
+    include: { cart: true },
+  });
+  if (!item || item.cart.userId !== auth.sub) return fail("CART_ITEM_NOT_FOUND", "Cart item not found.", 404);
 
-  cart.items.splice(idx, 1);
-  cart.subtotal = calcSubtotal(cart.items);
-  cart.updatedAt = new Date().toISOString();
+  await prisma.cartItem.delete({ where: { id: item.id } });
 
-  return ok(cart);
+  const cart = await prisma.cart.findUniqueOrThrow({
+    where: { id: item.cartId },
+    include: { items: { include: { product: true } } },
+  });
+
+  return ok(toCartDto(cart));
 }
