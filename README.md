@@ -26,6 +26,9 @@ npx prisma migrate deploy
 
 4. (Optional) Validate Prisma config/schema.
 
+> If TypeScript shows errors like `Property 'product' does not exist on type 'PrismaClient'`, run `npx prisma generate` and restart the dev server/IDE TypeScript server.
+
+
 ```bash
 npx prisma validate
 ```

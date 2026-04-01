@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import type { Product } from "@/lib/mock-db";
+import type { Product } from "@/lib/product";
 
 interface ProductCardProps {
   product: Product;

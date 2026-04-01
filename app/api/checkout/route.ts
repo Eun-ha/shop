@@ -1,9 +1,10 @@
 // app/api/checkout/route.ts
 import { created, fail, parseJson } from "@/lib/http";
 import { requireAuth } from "@/lib/auth";
-import { orders, products } from "@/lib/mock-db";
-import type { CartItem, ShippingAddress } from "@/lib/mock-db";
-import { calcSubtotal } from "@/lib/mock-db";
+import { prisma } from "@/lib/prisma";
+import type { CartItem } from "@/lib/cart";
+import type { ShippingAddress } from "@/lib/order";
+import { calcSubtotalAmount, toOrderDto, toOrderItemCreateData } from "@/lib/order";
 
 type Body = {
   items: { productId: string; quantity: number }[];
@@ -20,17 +21,16 @@ export async function POST(req: Request) {
     return fail("INVALID_REQUEST", "items and shippingAddress are required", 400);
   }
 
-  // 1) items 검증 + 재고 체크
   const orderItems: CartItem[] = [];
 
   for (const it of body.items) {
     const qty = Math.max(1, Math.min(99, Number(it.quantity || 0)));
-    
+
     if (!it.productId || !qty) {
       return fail("INVALID_REQUEST", "Each item needs productId and quantity", 400);
     }
 
-    const p = products.get(it.productId);
+    const p = await prisma.product.findUnique({ where: { id: it.productId } });
 
     if (!p) {
       return fail("PRODUCT_NOT_FOUND", "Product not found.", 404, { productId: it.productId });
@@ -44,38 +44,48 @@ export async function POST(req: Request) {
       return fail("OUT_OF_STOCK", "Insufficient stock.", 409, { productId: it.productId, stock: p.stock });
     }
 
+    const price = { amount: p.priceAmount, currency: "KRW" as const };
     orderItems.push({
       itemId: `checkoutitem_${Math.random().toString(16).slice(2)}`,
       productId: p.id,
       name: p.name,
-      price: p.price,
+      price,
       quantity: qty,
-      lineTotal: { ...p.price, amount: p.price.amount * qty },
+      lineTotal: { ...price, amount: p.priceAmount * qty },
     });
   }
 
-  // 2) 주문 생성
-  const orderId = `ord_${Math.random().toString(16).slice(2)}`;
-  const subtotal = calcSubtotal(orderItems);
+  const order = await prisma.$transaction(async tx => {
+    const createdOrder = await tx.order.create({
+      data: {
+        userId: auth.sub,
+        subtotalAmount: calcSubtotalAmount(orderItems),
+        shippingName: body.shippingAddress.name,
+        shippingPhone: body.shippingAddress.phone,
+        shippingAddress1: body.shippingAddress.address1,
+        shippingAddress2: body.shippingAddress.address2 ?? null,
+        shippingCity: body.shippingAddress.city,
+        shippingPostalCode: body.shippingAddress.postalCode,
+        items: {
+          create: toOrderItemCreateData(orderItems),
+        },
+      },
+      include: { items: true },
+    });
 
-  const order = {
-    id: orderId,
-    userId: auth.sub,
-    status: "PENDING" as const,
-    items: orderItems,
-    subtotal,
-    shippingAddress: body.shippingAddress,
-    createdAt: new Date().toISOString(),
-  };
+    for (const it of body.items) {
+      await tx.product.update({
+        where: { id: it.productId },
+        data: {
+          stock: {
+            decrement: Math.max(1, Math.min(99, Number(it.quantity || 0))),
+          },
+        },
+      });
+    }
 
-  orders.set(orderId, order);
+    return createdOrder;
+  });
 
-  //(선택) 즉시구매 시점에 재고 차감을 하고 싶으면 아래 주석 해제
-  for (const it of body.items) {
-    const p = products.get(it.productId)!;
-    p.stock -= Math.max(1, Math.min(99, Number(it.quantity || 0)));
-    p.updatedAt = new Date().toISOString();
-  }
-
-  return created({ order });
+  return created({ order: toOrderDto(order) });
 }
