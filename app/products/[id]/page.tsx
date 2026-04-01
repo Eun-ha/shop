@@ -1,4 +1,4 @@
-import type { Product } from "@/lib/mock-db";
+import type { Product } from "@/lib/product";
 import Image from "next/image";
 import PurchaseActions from "./PurchaseActions";
 

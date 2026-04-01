@@ -1,7 +1,7 @@
 "use client";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "@/lib/stores/auth-store";
-import type { User } from "@/lib/mock-db";
+import type { User } from "@/lib/user";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 

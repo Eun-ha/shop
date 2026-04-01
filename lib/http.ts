@@ -7,7 +7,8 @@ export type ApiErrorCode =
   | "CART_ITEM_NOT_FOUND"
   | "OUT_OF_STOCK"
   | "INVALID_REQUEST"
-  | "ORDER_NOT_FOUND";
+  | "ORDER_NOT_FOUND"
+  | "BUY_NOW_INTENT_NOT_FOUND";
 
 export function ok<T>(data: T, init?: ResponseInit) {
   return NextResponse.json(data, { status: 200, ...init });
