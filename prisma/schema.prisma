@@ -12,6 +12,12 @@ datasource db {
   provider = "postgresql"
 }
 
+enum ProductStatus {
+  ACTIVE
+  INACTIVE
+  SOLD_OUT
+}
+
 model User {
   id           String   @id @default(cuid())
   email        String   @unique
@@ -20,4 +26,23 @@ model User {
   role         String   @default("USER")
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+}
+
+model Product {
+  id                 String        @id @default(cuid())
+  name               String
+  description        String?
+  thumbnailUrl       String?
+  images             String[]      @default([])
+  priceAmount        Int
+  compareAtPriceAmount Int?
+  category           String?
+  tags               String[]      @default([])
+  stock              Int           @default(0)
+  status             ProductStatus @default(ACTIVE)
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  @@index([status, createdAt(sort: Desc)])
+  @@index([category])
 }
