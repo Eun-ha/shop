@@ -12,12 +12,18 @@ type ProductsResponse = {
   };
 };
 
-async function fetchProducts(page: number, limit: number): Promise<ProductsResponse> {
-  const url = `${API_BASE_URL}/api/products?page=${page}&limit=${limit}`;
+async function fetchProducts(rawPage?: string, rawLimit?: string): Promise<ProductsResponse> {
+  const params = new URLSearchParams();
+  if (rawPage) params.set("page", rawPage);
+  if (rawLimit) params.set("limit", rawLimit);
+  const query = params.toString();
+  const url = `${API_BASE_URL}/api/products${query ? `?${query}` : ""}`;
   const res = await fetch(url, { cache: "no-store" });
-  if (!res.ok) return { items: [], meta: { page, limit, total: 0 } };
+  const fallbackPage = Math.max(1, Number(rawPage ?? "1") || 1);
+  const fallbackLimit = Math.min(100, Math.max(1, Number(rawLimit ?? "20") || 20));
+  if (!res.ok) return { items: [], meta: { page: fallbackPage, limit: fallbackLimit, total: 0 } };
   const data = await res.json();
-  return { items: data.items || [], meta: data.meta || { page, limit, total: 0 } };
+  return { items: data.items || [], meta: data.meta || { page: fallbackPage, limit: fallbackLimit, total: 0 } };
 }
 
 export default async function Home({
@@ -25,9 +31,7 @@ export default async function Home({
 }: {
   searchParams?: { page?: string; limit?: string };
 }) {
-  const page = Math.max(1, Number(searchParams?.page ?? "1"));
-  const limit = Math.min(100, Math.max(1, Number(searchParams?.limit ?? "20")));
-  const { items: products, meta } = await fetchProducts(page, limit);
+  const { items: products, meta } = await fetchProducts(searchParams?.page, searchParams?.limit);
   const totalPages = Math.max(1, Math.ceil(meta.total / meta.limit));
   const hasPrevPage = meta.page > 1;
   const hasNextPage = meta.page < totalPages;
