@@ -62,6 +62,57 @@ export default async function Home({
     <main className="min-h-screen bg-zinc-50 dark:bg-black py-12 px-4">
       <div className="max-w-5xl mx-auto">
         <h1 className="text-3xl font-bold mb-8 text-zinc-900 dark:text-zinc-50">상품 목록</h1>
+        <form className="mb-6 grid grid-cols-1 gap-3 rounded border border-zinc-200 bg-white p-4 md:grid-cols-4 dark:border-zinc-800 dark:bg-zinc-950">
+          <input type="hidden" name="page" value="1" />
+          <input type="hidden" name="limit" value={searchParams?.limit ?? "20"} />
+          <label className="flex flex-col gap-1 text-sm text-zinc-600 dark:text-zinc-300">
+            검색어
+            <input
+              type="text"
+              name="q"
+              defaultValue={searchParams?.q ?? ""}
+              placeholder="상품명 검색"
+              className="rounded border border-zinc-300 px-3 py-2 text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-sm text-zinc-600 dark:text-zinc-300">
+            카테고리
+            <input
+              type="text"
+              name="category"
+              defaultValue={searchParams?.category ?? ""}
+              placeholder="예: fashion"
+              className="rounded border border-zinc-300 px-3 py-2 text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-sm text-zinc-600 dark:text-zinc-300">
+            정렬
+            <select
+              name="sort"
+              defaultValue={searchParams?.sort ?? "createdAt_desc"}
+              className="rounded border border-zinc-300 px-3 py-2 text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+            >
+              <option value="createdAt_desc">최신순</option>
+              <option value="createdAt_asc">오래된순</option>
+              <option value="price_asc">가격 낮은순</option>
+              <option value="price_desc">가격 높은순</option>
+            </select>
+          </label>
+          <div className="flex items-end gap-2">
+            <button
+              type="submit"
+              className="rounded bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+            >
+              적용
+            </button>
+            <Link
+              href="/"
+              className="rounded border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800"
+            >
+              초기화
+            </Link>
+          </div>
+        </form>
         <p className="mb-4 text-sm text-zinc-500">
           총 {meta.total}개 · {meta.page}/{totalPages} 페이지
         </p>
