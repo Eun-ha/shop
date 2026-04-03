@@ -13,36 +13,51 @@ type ProductsResponse = {
 };
 
 type ProductSearchParams = {
-  q?: string;
-  category?: string;
-  sort?: string;
-  page?: string;
-  limit?: string;
+  q?: string | string[];
+  category?: string | string[];
+  sort?: string | string[];
+  page?: string | string[];
+  limit?: string | string[];
 };
+
+function firstParam(value?: string | string[]): string | undefined {
+  if (Array.isArray(value)) return value[0];
+  return value;
+}
 
 function buildProductListHref(nextParams: ProductSearchParams): string {
   const queryParams = new URLSearchParams();
-  if (nextParams.q) queryParams.set("q", nextParams.q);
-  if (nextParams.category) queryParams.set("category", nextParams.category);
-  if (nextParams.sort) queryParams.set("sort", nextParams.sort);
-  if (nextParams.page) queryParams.set("page", nextParams.page);
-  if (nextParams.limit) queryParams.set("limit", nextParams.limit);
+  const q = firstParam(nextParams.q);
+  const category = firstParam(nextParams.category);
+  const sort = firstParam(nextParams.sort);
+  const page = firstParam(nextParams.page);
+  const limit = firstParam(nextParams.limit);
+  if (q) queryParams.set("q", q);
+  if (category) queryParams.set("category", category);
+  if (sort) queryParams.set("sort", sort);
+  if (page) queryParams.set("page", page);
+  if (limit) queryParams.set("limit", limit);
   const query = queryParams.toString();
   return `/${query ? `?${query}` : ""}`;
 }
 
 async function fetchProducts(searchParams?: ProductSearchParams): Promise<ProductsResponse> {
   const params = new URLSearchParams();
-  if (searchParams?.q) params.set("q", searchParams.q);
-  if (searchParams?.category) params.set("category", searchParams.category);
-  if (searchParams?.sort) params.set("sort", searchParams.sort);
-  if (searchParams?.page) params.set("page", searchParams.page);
-  if (searchParams?.limit) params.set("limit", searchParams.limit);
+  const q = firstParam(searchParams?.q);
+  const category = firstParam(searchParams?.category);
+  const sort = firstParam(searchParams?.sort);
+  const page = firstParam(searchParams?.page);
+  const limit = firstParam(searchParams?.limit);
+  if (q) params.set("q", q);
+  if (category) params.set("category", category);
+  if (sort) params.set("sort", sort);
+  if (page) params.set("page", page);
+  if (limit) params.set("limit", limit);
   const query = params.toString();
   const url = `${API_BASE_URL}/api/products${query ? `?${query}` : ""}`;
   const res = await fetch(url, { cache: "no-store" });
-  const fallbackPage = Math.max(1, Number(searchParams?.page ?? "1") || 1);
-  const fallbackLimit = Math.min(100, Math.max(1, Number(searchParams?.limit ?? "20") || 20));
+  const fallbackPage = Math.max(1, Number(page ?? "1") || 1);
+  const fallbackLimit = Math.min(100, Math.max(1, Number(limit ?? "20") || 20));
   if (!res.ok) return { items: [], meta: { page: fallbackPage, limit: fallbackLimit, total: 0 } };
   const data = await res.json();
   return { items: data.items || [], meta: data.meta || { page: fallbackPage, limit: fallbackLimit, total: 0 } };
@@ -51,9 +66,14 @@ async function fetchProducts(searchParams?: ProductSearchParams): Promise<Produc
 export default async function Home({
   searchParams,
 }: {
-  searchParams?: ProductSearchParams;
+  searchParams?: ProductSearchParams | Promise<ProductSearchParams>;
 }) {
-  const { items: products, meta } = await fetchProducts(searchParams);
+  const resolvedSearchParams = (await searchParams) || {};
+  const { items: products, meta } = await fetchProducts(resolvedSearchParams);
+  const q = firstParam(resolvedSearchParams.q);
+  const category = firstParam(resolvedSearchParams.category);
+  const sort = firstParam(resolvedSearchParams.sort);
+  const limit = firstParam(resolvedSearchParams.limit) ?? "20";
   const totalPages = Math.max(1, Math.ceil(meta.total / meta.limit));
   const hasPrevPage = meta.page > 1;
   const hasNextPage = meta.page < totalPages;
@@ -64,13 +84,13 @@ export default async function Home({
         <h1 className="text-3xl font-bold mb-8 text-zinc-900 dark:text-zinc-50">상품 목록</h1>
         <form className="mb-6 grid grid-cols-1 gap-3 rounded border border-zinc-200 bg-white p-4 md:grid-cols-4 dark:border-zinc-800 dark:bg-zinc-950">
           <input type="hidden" name="page" value="1" />
-          <input type="hidden" name="limit" value={searchParams?.limit ?? "20"} />
+          <input type="hidden" name="limit" value={limit} />
           <label className="flex flex-col gap-1 text-sm text-zinc-600 dark:text-zinc-300">
             검색어
             <input
               type="text"
               name="q"
-              defaultValue={searchParams?.q ?? ""}
+              defaultValue={q ?? ""}
               placeholder="상품명 검색"
               className="rounded border border-zinc-300 px-3 py-2 text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
             />
@@ -80,7 +100,7 @@ export default async function Home({
             <input
               type="text"
               name="category"
-              defaultValue={searchParams?.category ?? ""}
+              defaultValue={category ?? ""}
               placeholder="예: fashion"
               className="rounded border border-zinc-300 px-3 py-2 text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
             />
@@ -89,7 +109,7 @@ export default async function Home({
             정렬
             <select
               name="sort"
-              defaultValue={searchParams?.sort ?? "createdAt_desc"}
+              defaultValue={sort ?? "createdAt_desc"}
               className="rounded border border-zinc-300 px-3 py-2 text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
             >
               <option value="createdAt_desc">최신순</option>
@@ -128,9 +148,9 @@ export default async function Home({
         <div className="mt-8 flex items-center justify-center gap-4">
           <Link
             href={buildProductListHref({
-              q: searchParams?.q,
-              category: searchParams?.category,
-              sort: searchParams?.sort,
+              q,
+              category,
+              sort,
               page: String(Math.max(1, meta.page - 1)),
               limit: String(meta.limit),
             })}
@@ -146,9 +166,9 @@ export default async function Home({
           </span>
           <Link
             href={buildProductListHref({
-              q: searchParams?.q,
-              category: searchParams?.category,
-              sort: searchParams?.sort,
+              q,
+              category,
+              sort,
               page: String(Math.min(totalPages, meta.page + 1)),
               limit: String(meta.limit),
             })}
