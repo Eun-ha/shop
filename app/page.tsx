@@ -12,15 +12,37 @@ type ProductsResponse = {
   };
 };
 
-async function fetchProducts(rawPage?: string, rawLimit?: string): Promise<ProductsResponse> {
+type ProductSearchParams = {
+  q?: string;
+  category?: string;
+  sort?: string;
+  page?: string;
+  limit?: string;
+};
+
+function buildProductListHref(nextParams: ProductSearchParams): string {
+  const queryParams = new URLSearchParams();
+  if (nextParams.q) queryParams.set("q", nextParams.q);
+  if (nextParams.category) queryParams.set("category", nextParams.category);
+  if (nextParams.sort) queryParams.set("sort", nextParams.sort);
+  if (nextParams.page) queryParams.set("page", nextParams.page);
+  if (nextParams.limit) queryParams.set("limit", nextParams.limit);
+  const query = queryParams.toString();
+  return `/${query ? `?${query}` : ""}`;
+}
+
+async function fetchProducts(searchParams?: ProductSearchParams): Promise<ProductsResponse> {
   const params = new URLSearchParams();
-  if (rawPage) params.set("page", rawPage);
-  if (rawLimit) params.set("limit", rawLimit);
+  if (searchParams?.q) params.set("q", searchParams.q);
+  if (searchParams?.category) params.set("category", searchParams.category);
+  if (searchParams?.sort) params.set("sort", searchParams.sort);
+  if (searchParams?.page) params.set("page", searchParams.page);
+  if (searchParams?.limit) params.set("limit", searchParams.limit);
   const query = params.toString();
   const url = `${API_BASE_URL}/api/products${query ? `?${query}` : ""}`;
   const res = await fetch(url, { cache: "no-store" });
-  const fallbackPage = Math.max(1, Number(rawPage ?? "1") || 1);
-  const fallbackLimit = Math.min(100, Math.max(1, Number(rawLimit ?? "20") || 20));
+  const fallbackPage = Math.max(1, Number(searchParams?.page ?? "1") || 1);
+  const fallbackLimit = Math.min(100, Math.max(1, Number(searchParams?.limit ?? "20") || 20));
   if (!res.ok) return { items: [], meta: { page: fallbackPage, limit: fallbackLimit, total: 0 } };
   const data = await res.json();
   return { items: data.items || [], meta: data.meta || { page: fallbackPage, limit: fallbackLimit, total: 0 } };
@@ -29,9 +51,9 @@ async function fetchProducts(rawPage?: string, rawLimit?: string): Promise<Produ
 export default async function Home({
   searchParams,
 }: {
-  searchParams?: { page?: string; limit?: string };
+  searchParams?: ProductSearchParams;
 }) {
-  const { items: products, meta } = await fetchProducts(searchParams?.page, searchParams?.limit);
+  const { items: products, meta } = await fetchProducts(searchParams);
   const totalPages = Math.max(1, Math.ceil(meta.total / meta.limit));
   const hasPrevPage = meta.page > 1;
   const hasNextPage = meta.page < totalPages;
@@ -54,7 +76,13 @@ export default async function Home({
         </div>
         <div className="mt-8 flex items-center justify-center gap-4">
           <Link
-            href={`/?page=${Math.max(1, meta.page - 1)}&limit=${meta.limit}`}
+            href={buildProductListHref({
+              q: searchParams?.q,
+              category: searchParams?.category,
+              sort: searchParams?.sort,
+              page: String(Math.max(1, meta.page - 1)),
+              limit: String(meta.limit),
+            })}
             aria-disabled={!hasPrevPage}
             className={`rounded px-4 py-2 text-sm font-medium ${
               hasPrevPage ? "bg-zinc-900 text-white hover:bg-zinc-700" : "cursor-not-allowed bg-zinc-300 text-zinc-500"
@@ -66,7 +94,13 @@ export default async function Home({
             {meta.page} / {totalPages}
           </span>
           <Link
-            href={`/?page=${Math.min(totalPages, meta.page + 1)}&limit=${meta.limit}`}
+            href={buildProductListHref({
+              q: searchParams?.q,
+              category: searchParams?.category,
+              sort: searchParams?.sort,
+              page: String(Math.min(totalPages, meta.page + 1)),
+              limit: String(meta.limit),
+            })}
             aria-disabled={!hasNextPage}
             className={`rounded px-4 py-2 text-sm font-medium ${
               hasNextPage ? "bg-zinc-900 text-white hover:bg-zinc-700" : "cursor-not-allowed bg-zinc-300 text-zinc-500"
