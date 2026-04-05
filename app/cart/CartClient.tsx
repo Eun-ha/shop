@@ -1,15 +1,17 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import type { Cart } from "@/lib/cart";
+import { parseApiErrorMessage } from "@/lib/client-api";
 import { useAuthStore } from "@/lib/stores/auth-store";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
 export default function CartClient() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const initialized = useAuthStore((state) => state.initialized);
 
@@ -28,6 +30,22 @@ export default function CartClient() {
       return res.json();
     },
     retry: false,
+  });
+
+  const quantityMutation = useMutation({
+    mutationFn: async ({ itemId, quantity }: { itemId: string; quantity: number }) => {
+      const res = await fetch(`${API_BASE_URL}/api/cart/items/${encodeURIComponent(itemId)}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ quantity }),
+      });
+      if (!res.ok) throw new Error(await parseApiErrorMessage(res, "수량 변경에 실패했습니다."));
+      return (await res.json()) as Cart;
+    },
+    onSuccess: (updatedCart) => {
+      queryClient.setQueryData(["cart", isAuthenticated], updatedCart);
+      queryClient.setQueryData(["checkout-cart", isAuthenticated], updatedCart);
+    },
   });
 
   if (!initialized || isLoading) return <div className="max-w-2xl mx-auto py-16 text-center text-zinc-500">로딩 중...</div>;
@@ -55,11 +73,31 @@ export default function CartClient() {
               <div className="text-zinc-500 text-sm">
                 {item.price.amount.toLocaleString()}원 × {item.quantity}개
               </div>
+              <div className="mt-2 flex items-center gap-2">
+                <button
+                  type="button"
+                  className="w-8 h-8 rounded border border-zinc-300 disabled:opacity-50"
+                  disabled={item.quantity <= 1 || quantityMutation.isPending}
+                  onClick={() => quantityMutation.mutate({ itemId: item.itemId, quantity: item.quantity - 1 })}
+                >
+                  -
+                </button>
+                <span className="text-sm min-w-8 text-center">{item.quantity}</span>
+                <button
+                  type="button"
+                  className="w-8 h-8 rounded border border-zinc-300 disabled:opacity-50"
+                  disabled={item.quantity >= 99 || quantityMutation.isPending}
+                  onClick={() => quantityMutation.mutate({ itemId: item.itemId, quantity: item.quantity + 1 })}
+                >
+                  +
+                </button>
+              </div>
             </div>
             <div className="font-bold text-blue-600 min-w-[80px] text-right">{item.lineTotal.amount.toLocaleString()}원</div>
           </div>
         ))}
       </div>
+      {quantityMutation.isError && <div className="mt-4 text-sm text-red-500">{quantityMutation.error.message}</div>}
       <div className="flex justify-end mt-8">
         <div className="text-xl font-bold text-zinc-900 dark:text-zinc-50">총 합계: {cart.subtotal.amount.toLocaleString()}원</div>
       </div>
