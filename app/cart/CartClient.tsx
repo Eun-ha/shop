@@ -48,6 +48,20 @@ export default function CartClient() {
     },
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: async (itemId: string) => {
+      const res = await fetch(`${API_BASE_URL}/api/cart/items/${encodeURIComponent(itemId)}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error(await parseApiErrorMessage(res, "상품 삭제에 실패했습니다."));
+      return (await res.json()) as Cart;
+    },
+    onSuccess: (updatedCart) => {
+      queryClient.setQueryData(["cart", isAuthenticated], updatedCart);
+      queryClient.setQueryData(["checkout-cart", isAuthenticated], updatedCart);
+    },
+  });
+
   if (!initialized || isLoading) return <div className="max-w-2xl mx-auto py-16 text-center text-zinc-500">로딩 중...</div>;
   if (!isAuthenticated) return <div className="max-w-2xl mx-auto py-16 text-center text-red-500">로그인이 필요합니다.</div>;
   if (error) return <div className="max-w-2xl mx-auto py-16 text-center text-red-500">장바구니를 불러올 수 없습니다.</div>;
@@ -77,7 +91,7 @@ export default function CartClient() {
                 <button
                   type="button"
                   className="w-8 h-8 rounded border border-zinc-300 disabled:opacity-50"
-                  disabled={item.quantity <= 1 || quantityMutation.isPending}
+                  disabled={item.quantity <= 1 || quantityMutation.isPending || deleteMutation.isPending}
                   onClick={() => quantityMutation.mutate({ itemId: item.itemId, quantity: item.quantity - 1 })}
                 >
                   -
@@ -86,10 +100,18 @@ export default function CartClient() {
                 <button
                   type="button"
                   className="w-8 h-8 rounded border border-zinc-300 disabled:opacity-50"
-                  disabled={item.quantity >= 99 || quantityMutation.isPending}
+                  disabled={item.quantity >= 99 || quantityMutation.isPending || deleteMutation.isPending}
                   onClick={() => quantityMutation.mutate({ itemId: item.itemId, quantity: item.quantity + 1 })}
                 >
                   +
+                </button>
+                <button
+                  type="button"
+                  className="ml-2 rounded border border-red-200 px-3 py-1 text-xs font-medium text-red-600 disabled:opacity-50"
+                  disabled={quantityMutation.isPending || deleteMutation.isPending}
+                  onClick={() => deleteMutation.mutate(item.itemId)}
+                >
+                  삭제
                 </button>
               </div>
             </div>
@@ -98,6 +120,7 @@ export default function CartClient() {
         ))}
       </div>
       {quantityMutation.isError && <div className="mt-4 text-sm text-red-500">{quantityMutation.error.message}</div>}
+      {deleteMutation.isError && <div className="mt-4 text-sm text-red-500">{deleteMutation.error.message}</div>}
       <div className="flex justify-end mt-8">
         <div className="text-xl font-bold text-zinc-900 dark:text-zinc-50">총 합계: {cart.subtotal.amount.toLocaleString()}원</div>
       </div>
