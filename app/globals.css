@@ -2,7 +2,7 @@
 
 :root {
   /* E-commerce friendly semantic tokens (light) */
-  --md-sys-color-primary: #2563eb;
+  --md-sys-color-primary: #1a73e8;
   --md-sys-color-on-primary: #ffffff;
   --md-sys-color-secondary: #111827;
   --md-sys-color-on-secondary: #ffffff;
@@ -40,7 +40,7 @@
 @media (prefers-color-scheme: dark) {
   :root {
     /* E-commerce friendly semantic tokens (dark) */
-    --md-sys-color-primary: #3b82f6;
+    --md-sys-color-primary: #8ab4f8;
     --md-sys-color-on-primary: #ffffff;
     --md-sys-color-secondary: #e5e7eb;
     --md-sys-color-on-secondary: #111827;
