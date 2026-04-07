@@ -22,7 +22,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
     return <div className="max-w-2xl mx-auto py-16 text-center text-on-surface/70">상품을 찾을 수 없습니다.</div>;
   }
   return (
-    <main className="max-w-2xl mx-auto py-16 px-4">
+    <main className="max-w-3xl mx-auto py-16 px-4">
       <div className="flex flex-col md:flex-row gap-8">
         <div className="flex-1">
           <Image
