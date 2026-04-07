@@ -104,13 +104,13 @@ export default async function Home({
                 <option value="price_desc">가격 높은순</option>
               </select>
             </label>
-            <div className="flex items-end gap-2">
-              <Button type="submit" size="sm">
+            <div className="flex items-center gap-2 md:justify-end">
+              <Button type="submit" className="h-11 px-4 py-2 hover:translate-y-0 hover:shadow-sm">
                 적용
               </Button>
               <Link
                 href="/"
-                className="inline-flex items-center justify-center rounded-full border border-outline bg-surface px-4 py-2 text-sm font-medium text-on-surface transition-colors hover:bg-surface-variant focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2"
+                className="inline-flex h-11 items-center justify-center rounded-full border border-outline bg-surface px-4 py-2 text-sm font-medium text-on-surface transition-colors hover:bg-surface-variant focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2"
               >
                 초기화
               </Link>
