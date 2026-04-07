@@ -1,26 +1,65 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* E-commerce friendly semantic tokens (light) */
+  --md-sys-color-primary: #2563eb;
+  --md-sys-color-on-primary: #ffffff;
+  --md-sys-color-secondary: #111827;
+  --md-sys-color-on-secondary: #ffffff;
+  --md-sys-color-background: #f9fafb;
+  --md-sys-color-on-background: #111827;
+  --md-sys-color-surface: #ffffff;
+  --md-sys-color-on-surface: #111827;
+  --md-sys-color-surface-variant: #f3f4f6;
+  --md-sys-color-outline: #d1d5db;
+  --md-sys-color-sale: #dc2626;
+  --md-sys-color-on-sale: #ffffff;
+
+  /* Legacy aliases used by app shell */
+  --background: var(--md-sys-color-background);
+  --foreground: var(--md-sys-color-on-background);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-primary: var(--md-sys-color-primary);
+  --color-on-primary: var(--md-sys-color-on-primary);
+  --color-secondary: var(--md-sys-color-secondary);
+  --color-on-secondary: var(--md-sys-color-on-secondary);
+  --color-surface: var(--md-sys-color-surface);
+  --color-on-surface: var(--md-sys-color-on-surface);
+  --color-surface-variant: var(--md-sys-color-surface-variant);
+  --color-outline: var(--md-sys-color-outline);
+  --color-sale: var(--md-sys-color-sale);
+  --color-on-sale: var(--md-sys-color-on-sale);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    /* E-commerce friendly semantic tokens (dark) */
+    --md-sys-color-primary: #3b82f6;
+    --md-sys-color-on-primary: #ffffff;
+    --md-sys-color-secondary: #e5e7eb;
+    --md-sys-color-on-secondary: #111827;
+    --md-sys-color-background: #030712;
+    --md-sys-color-on-background: #f9fafb;
+    --md-sys-color-surface: #111827;
+    --md-sys-color-on-surface: #f9fafb;
+    --md-sys-color-surface-variant: #1f2937;
+    --md-sys-color-outline: #374151;
+    --md-sys-color-sale: #f87171;
+    --md-sys-color-on-sale: #111827;
+
+    --background: var(--md-sys-color-background);
+    --foreground: var(--md-sys-color-on-background);
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
