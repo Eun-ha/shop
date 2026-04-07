@@ -19,7 +19,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
   const resolvedParams = await params;
   const product = await fetchProduct(resolvedParams.id);
   if (!product) {
-    return <div className="max-w-2xl mx-auto py-16 text-center text-zinc-500">상품을 찾을 수 없습니다.</div>;
+    return <div className="max-w-2xl mx-auto py-16 text-center text-on-surface/70">상품을 찾을 수 없습니다.</div>;
   }
   return (
     <main className="max-w-2xl mx-auto py-16 px-4">
@@ -30,7 +30,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
             alt={product.name}
             width={500}
             height={500}
-            className="rounded-lg object-cover w-full h-96 bg-zinc-100"
+            className="rounded-lg object-cover w-full h-96 bg-surface-variant"
             unoptimized
           />
           <div className="flex gap-2 mt-2">
@@ -41,22 +41,22 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
                 alt={product.name + " 이미지"}
                 width={80}
                 height={80}
-                className="rounded border object-cover w-20 h-20 bg-zinc-100"
+                className="rounded border object-cover w-20 h-20 bg-surface-variant"
                 unoptimized
               />
             ))}
           </div>
         </div>
         <div className="flex-1 flex flex-col gap-4">
-          <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">{product.name}</h2>
-          <div className="text-lg text-zinc-600 dark:text-zinc-300">{product.description}</div>
+          <h2 className="text-2xl font-bold text-on-surface">{product.name}</h2>
+          <div className="text-lg text-on-surface/70">{product.description}</div>
           <div className="flex items-center gap-2 mt-2">
-            <span className="text-2xl font-bold text-blue-600">{product.price.amount.toLocaleString()}원</span>
+            <span className="text-2xl font-bold text-primary">{product.price.amount.toLocaleString()}원</span>
             {product.compareAtPrice && (
-              <span className="text-base line-through text-zinc-400">{product.compareAtPrice.amount.toLocaleString()}원</span>
+              <span className="text-base line-through text-on-surface/50">{product.compareAtPrice.amount.toLocaleString()}원</span>
             )}
           </div>
-          <div className="text-sm text-zinc-500">재고: {product.stock}개</div>
+          <div className="text-sm text-on-surface/70">재고: {product.stock}개</div>
           <PurchaseActions productId={product.id} stock={product.stock} />
         </div>
       </div>

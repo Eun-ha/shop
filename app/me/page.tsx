@@ -61,58 +61,58 @@ export default function MePage() {
     window.location.href = "/login";
   };
 
-  if (!initialized || isLoading) return <div className="py-16 text-center text-zinc-500">로딩 중...</div>;
-  if (!isAuthenticated) return <div className="py-16 text-center text-red-500">로그인이 필요합니다.</div>;
-  if (error) return <div className="py-16 text-center text-red-500">사용자 정보를 불러올 수 없습니다.</div>;
+  if (!initialized || isLoading) return <div className="py-16 text-center text-on-surface/70">로딩 중...</div>;
+  if (!isAuthenticated) return <div className="py-16 text-center text-sale">로그인이 필요합니다.</div>;
+  if (error) return <div className="py-16 text-center text-sale">사용자 정보를 불러올 수 없습니다.</div>;
 
   return (
     <main className="max-w-3xl mx-auto py-16 px-4">
-      <h1 className="text-2xl font-bold mb-8 text-zinc-900 dark:text-zinc-50">마이페이지</h1>
+      <h1 className="text-2xl font-bold mb-8 text-on-surface">마이페이지</h1>
 
-      <section className="mb-10 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-6">
-        <h2 className="text-lg font-semibold mb-4 text-zinc-900 dark:text-zinc-50">내 정보</h2>
+      <section className="mb-10 rounded-lg border border-outline bg-surface p-6">
+        <h2 className="text-lg font-semibold mb-4 text-on-surface">내 정보</h2>
         <div className="mb-2">이메일: <span className="font-mono">{user?.email}</span></div>
         <div className="mb-2">이름: <span className="font-mono">{user?.name || "-"}</span></div>
         <div className="mb-4">권한: <span className="font-mono">{user?.role}</span></div>
         <button
           onClick={handleLogout}
-          className="mt-2 px-6 py-2 rounded bg-zinc-300 text-zinc-900 font-semibold hover:bg-zinc-400 transition"
+          className="mt-2 rounded bg-surface-variant px-6 py-2 font-semibold text-on-surface transition hover:opacity-90"
         >
           로그아웃
         </button>
       </section>
 
-      <section className="rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-6">
-        <h2 className="text-lg font-semibold mb-4 text-zinc-900 dark:text-zinc-50">주문 완료 상품</h2>
+      <section className="rounded-lg border border-outline bg-surface p-6">
+        <h2 className="text-lg font-semibold mb-4 text-on-surface">주문 완료 상품</h2>
 
-        {ordersLoading && <p className="text-zinc-500">주문 내역을 불러오는 중...</p>}
-        {ordersError && <p className="text-red-500">주문 내역을 불러올 수 없습니다.</p>}
+        {ordersLoading && <p className="text-on-surface/70">주문 내역을 불러오는 중...</p>}
+        {ordersError && <p className="text-sale">주문 내역을 불러올 수 없습니다.</p>}
 
         {!ordersLoading && !ordersError && completedOrders.length === 0 && (
-          <p className="text-zinc-500">아직 주문한 상품이 없습니다.</p>
+          <p className="text-on-surface/70">아직 주문한 상품이 없습니다.</p>
         )}
 
         {!ordersLoading && !ordersError && completedOrders.length > 0 && (
           <div className="space-y-4">
             {completedOrders.map((order) => (
-              <article key={order.id} className="rounded-md border border-zinc-200 dark:border-zinc-700 p-4">
+              <article key={order.id} className="rounded-md border border-outline p-4">
                 <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-                  <p className="font-mono text-sm text-zinc-600 dark:text-zinc-300">주문번호: {order.id}</p>
-                  <p className="text-sm font-semibold text-blue-600">{formatOrderStatus(order.status)}</p>
+                  <p className="font-mono text-sm text-on-surface/70">주문번호: {order.id}</p>
+                  <p className="text-sm font-semibold text-primary">{formatOrderStatus(order.status)}</p>
                 </div>
 
                 <ul className="space-y-2 mb-3">
                   {order.items.map((item) => (
                     <li key={item.itemId} className="flex items-center justify-between text-sm">
-                      <span className="text-zinc-700 dark:text-zinc-200">{item.name} · {item.quantity}개</span>
-                      <span className="font-semibold text-zinc-900 dark:text-zinc-50">{item.lineTotal.amount.toLocaleString()}원</span>
+                      <span className="text-on-surface/80">{item.name} · {item.quantity}개</span>
+                      <span className="font-semibold text-on-surface">{item.lineTotal.amount.toLocaleString()}원</span>
                     </li>
                   ))}
                 </ul>
 
-                <div className="flex flex-wrap justify-between items-center gap-2 border-t border-zinc-200 dark:border-zinc-700 pt-3 text-sm">
-                  <span className="text-zinc-500">주문일: {new Date(order.createdAt).toLocaleString()}</span>
-                  <span className="font-bold text-zinc-900 dark:text-zinc-50">총 {order.subtotal.amount.toLocaleString()}원</span>
+                <div className="flex flex-wrap justify-between items-center gap-2 border-t border-outline pt-3 text-sm">
+                  <span className="text-on-surface/70">주문일: {new Date(order.createdAt).toLocaleString()}</span>
+                  <span className="font-bold text-on-surface">총 {order.subtotal.amount.toLocaleString()}원</span>
                 </div>
               </article>
             ))}
