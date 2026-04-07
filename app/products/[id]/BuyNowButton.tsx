@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useAsyncUiState } from "@/lib/hooks/useAsyncUiState";
 import { useAuthStore } from "@/lib/stores/auth-store";
 import { parseApiErrorMessage } from "@/lib/client-api";
+import { Button } from "@/components/ui/Button";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
@@ -50,15 +51,16 @@ export default function BuyNowButton({ productId, quantity }: BuyNowButtonProps)
 
   return (
     <div>
-      <button
+      <Button
         type="button"
-        className="px-6 py-3 rounded bg-zinc-900 text-white font-semibold hover:bg-zinc-700 transition disabled:bg-zinc-400"
+        variant="secondary"
+        size="lg"
         onClick={handleBuyNow}
         disabled={ui.loading}
       >
         {ui.loading ? "이동 중..." : "바로구매"}
-      </button>
-      {ui.message && <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-300">{ui.message}</p>}
+      </Button>
+      {ui.message && <p className="mt-2 text-sm text-on-surface/70">{ui.message}</p>}
     </div>
   );
 }

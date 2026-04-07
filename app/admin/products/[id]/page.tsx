@@ -6,6 +6,7 @@ import { useAuthStore } from "@/lib/stores/auth-store";
 import { useAsyncUiState } from "@/lib/hooks/useAsyncUiState";
 import type { Product } from "@/lib/product";
 import { parseApiErrorMessage } from "@/lib/client-api";
+import { Button } from "@/components/ui/Button";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
@@ -128,31 +129,31 @@ export default function AdminProductEditPage() {
 
   const isMutating = updateMutation.isPending || deleteMutation.isPending;
 
-  if (!initialized || isLoading) return <div className="py-16 text-center text-zinc-500">로딩 중...</div>;
-  if (!isAuthenticated) return <div className="py-16 text-center text-red-500">관리자 로그인이 필요합니다.</div>;
-  if (queryError) return <div className="py-16 text-center text-red-500">상품 정보를 불러올 수 없습니다.</div>;
+  if (!initialized || isLoading) return <div className="py-16 text-center text-on-surface/70">로딩 중...</div>;
+  if (!isAuthenticated) return <div className="py-16 text-center text-sale">관리자 로그인이 필요합니다.</div>;
+  if (queryError) return <div className="py-16 text-center text-sale">상품 정보를 불러올 수 없습니다.</div>;
   if (!product) return null;
 
   return (
     <main className="max-w-md mx-auto py-16 px-4">
-      <h1 className="text-2xl font-bold mb-8 text-zinc-900 dark:text-zinc-50">상품 수정</h1>
-      {ui.message && <div className="mb-4 text-red-500">{ui.message}</div>}
+      <h1 className="text-2xl font-bold mb-8 text-on-surface">상품 수정</h1>
+      {ui.message && <div className="mb-4 text-sale">{ui.message}</div>}
       <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-        <input className="border rounded px-4 py-2" type="text" placeholder="상품명" value={resolvedName} onChange={e => setName(e.target.value)} required />
-        <input className="border rounded px-4 py-2" type="number" placeholder="가격(원)" value={resolvedPrice} onChange={e => setPrice(e.target.value)} required />
-        <input className="border rounded px-4 py-2" type="number" placeholder="재고" value={resolvedStock} onChange={e => setStock(e.target.value)} required />
-        <select className="border rounded px-4 py-2" value={resolvedStatus} onChange={e => setStatus(e.target.value)}>
+        <input className="rounded border border-outline bg-surface px-4 py-2 text-on-surface" type="text" placeholder="상품명" value={resolvedName} onChange={e => setName(e.target.value)} required />
+        <input className="rounded border border-outline bg-surface px-4 py-2 text-on-surface" type="number" placeholder="가격(원)" value={resolvedPrice} onChange={e => setPrice(e.target.value)} required />
+        <input className="rounded border border-outline bg-surface px-4 py-2 text-on-surface" type="number" placeholder="재고" value={resolvedStock} onChange={e => setStock(e.target.value)} required />
+        <select className="rounded border border-outline bg-surface px-4 py-2 text-on-surface" value={resolvedStatus} onChange={e => setStatus(e.target.value)}>
           <option value="ACTIVE">판매중</option>
           <option value="INACTIVE">비활성</option>
           <option value="SOLD_OUT">품절</option>
         </select>
         <div className="flex gap-2 mt-4">
-          <button type="submit" className="px-8 py-3 rounded bg-blue-600 text-white font-semibold hover:bg-blue-700 transition" disabled={ui.loading || isMutating}>
+          <Button type="submit" size="lg" disabled={ui.loading || isMutating}>
             {ui.loading || isMutating ? "수정 중..." : "상품 수정"}
-          </button>
-          <button type="button" className="px-8 py-3 rounded bg-red-500 text-white font-semibold hover:bg-red-600 transition" onClick={handleDelete} disabled={ui.loading || isMutating}>
+          </Button>
+          <Button type="button" size="lg" className="bg-sale text-on-sale hover:bg-sale/90" onClick={handleDelete} disabled={ui.loading || isMutating}>
             삭제
-          </button>
+          </Button>
         </div>
       </form>
     </main>
