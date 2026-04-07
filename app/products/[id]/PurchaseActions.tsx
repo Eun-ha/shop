@@ -25,11 +25,11 @@ export default function PurchaseActions({ productId, stock }: PurchaseActionsPro
   return (
     <div className="mt-4 flex flex-col gap-4">
       <div className="flex items-center gap-3">
-        <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">수량</span>
-        <div className="inline-flex items-center rounded border border-zinc-300 dark:border-zinc-700">
+        <span className="text-sm font-medium text-on-surface/80">수량</span>
+        <div className="inline-flex items-center rounded border border-outline">
           <button
             type="button"
-            className="h-10 w-10 text-lg text-zinc-700 hover:bg-zinc-100 disabled:text-zinc-300 dark:text-zinc-200 dark:hover:bg-zinc-800"
+            className="h-10 w-10 text-lg text-on-surface/80 hover:bg-surface-variant disabled:text-on-surface/60"
             onClick={() => setQuantity((prev) => clampQuantity(prev - 1))}
             disabled={quantity <= 1}
             aria-label="수량 감소"
@@ -42,12 +42,12 @@ export default function PurchaseActions({ productId, stock }: PurchaseActionsPro
             max={maxQuantity}
             value={quantity}
             onChange={(e) => handleQuantityChange(e.target.value)}
-            className="h-10 w-16 border-x border-zinc-300 bg-white text-center text-sm text-zinc-900 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+            className="h-10 w-16 border-x border-outline bg-surface text-center text-sm text-on-surface focus:outline-none"
             aria-label="구매 수량"
           />
           <button
             type="button"
-            className="h-10 w-10 text-lg text-zinc-700 hover:bg-zinc-100 disabled:text-zinc-300 dark:text-zinc-200 dark:hover:bg-zinc-800"
+            className="h-10 w-10 text-lg text-on-surface/80 hover:bg-surface-variant disabled:text-on-surface/60"
             onClick={() => setQuantity((prev) => clampQuantity(prev + 1))}
             disabled={quantity >= maxQuantity}
             aria-label="수량 증가"
@@ -55,7 +55,7 @@ export default function PurchaseActions({ productId, stock }: PurchaseActionsPro
             +
           </button>
         </div>
-        <span className="text-xs text-zinc-500">최대 {maxQuantity}개</span>
+        <span className="text-xs text-on-surface/70">최대 {maxQuantity}개</span>
       </div>
       <div className="flex flex-wrap gap-3">
         <BuyNowButton productId={productId} quantity={quantity} />

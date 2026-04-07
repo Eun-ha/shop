@@ -27,19 +27,19 @@ export default function AdminProductsPage() {
 
   const products = data?.items || [];
 
-  if (!initialized || isLoading) return <div className="py-16 text-center text-zinc-500">로딩 중...</div>;
-  if (!isAuthenticated) return <div className="py-16 text-center text-red-500">관리자 로그인이 필요합니다.</div>;
-  if (error) return <div className="py-16 text-center text-red-500">상품 목록을 불러올 수 없습니다.</div>;
+  if (!initialized || isLoading) return <div className="py-16 text-center text-on-surface/70">로딩 중...</div>;
+  if (!isAuthenticated) return <div className="py-16 text-center text-sale">관리자 로그인이 필요합니다.</div>;
+  if (error) return <div className="py-16 text-center text-sale">상품 목록을 불러올 수 없습니다.</div>;
 
   return (
     <main className="max-w-4xl mx-auto py-16 px-4">
-      <h1 className="text-2xl font-bold mb-8 text-zinc-900 dark:text-zinc-50">상품 관리 (관리자)</h1>
+      <h1 className="text-2xl font-bold mb-8 text-on-surface">상품 관리 (관리자)</h1>
       <div className="mb-6 flex justify-end">
-        <Link href="/admin/products/new" className="px-6 py-2 rounded bg-blue-600 text-white font-semibold hover:bg-blue-700 transition">상품 등록</Link>
+        <Link href="/admin/products/new" className="px-6 py-2 rounded bg-primary text-on-primary font-semibold hover:opacity-90 transition">상품 등록</Link>
       </div>
       <table className="w-full border text-sm">
         <thead>
-          <tr className="bg-zinc-100 dark:bg-zinc-800">
+          <tr className="bg-surface-variant bg-surface-variant">
             <th className="p-2 border">ID</th>
             <th className="p-2 border">이름</th>
             <th className="p-2 border">가격</th>
@@ -57,7 +57,7 @@ export default function AdminProductsPage() {
               <td className="p-2 border">{p.stock}</td>
               <td className="p-2 border">{p.status}</td>
               <td className="p-2 border">
-                <Link href={`/admin/products/${p.id}`} className="text-blue-600 hover:underline">수정</Link>
+                <Link href={`/admin/products/${p.id}`} className="text-primary hover:underline">수정</Link>
               </td>
             </tr>
           ))}

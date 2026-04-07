@@ -63,13 +63,13 @@ export default function AddToCartButton({ productId, quantity }: AddToCartButton
     <div>
       <button
         type="button"
-        className="px-6 py-3 rounded bg-blue-600 text-white font-semibold hover:bg-blue-700 transition disabled:bg-blue-300"
+        className="px-6 py-3 rounded bg-primary text-on-primary font-semibold hover:opacity-90 transition disabled:bg-primary/40"
         onClick={() => addToCartMutation.mutate()}
         disabled={ui.loading || addToCartMutation.isPending}
       >
         {ui.loading || addToCartMutation.isPending ? "담는 중..." : "장바구니 담기"}
       </button>
-      {ui.message && <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-300">{ui.message}</p>}
+      {ui.message && <p className="mt-2 text-sm text-on-surface/70">{ui.message}</p>}
     </div>
   );
 }
