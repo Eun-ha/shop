@@ -1,6 +1,9 @@
 import ProductCard from "@/components/ProductCard";
 import Link from "next/link";
 import type { Product } from "@/lib/product";
+import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
 const API_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
 type ProductsResponse = {
@@ -79,66 +82,47 @@ export default async function Home({
   const hasNextPage = meta.page < totalPages;
 
   return (
-    <main className="min-h-screen bg-zinc-50 dark:bg-black py-12 px-4">
+    <main className="min-h-screen bg-background py-12 px-4 text-foreground">
       <div className="max-w-5xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8 text-zinc-900 dark:text-zinc-50">상품 목록</h1>
-        <form className="mb-6 grid grid-cols-1 gap-3 rounded border border-zinc-200 bg-white p-4 md:grid-cols-4 dark:border-zinc-800 dark:bg-zinc-950">
-          <input type="hidden" name="page" value="1" />
-          <input type="hidden" name="limit" value={limit} />
-          <label className="flex flex-col gap-1 text-sm text-zinc-600 dark:text-zinc-300">
-            검색어
-            <input
-              type="text"
-              name="q"
-              defaultValue={q ?? ""}
-              placeholder="상품명 검색"
-              className="rounded border border-zinc-300 px-3 py-2 text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
-            />
-          </label>
-          <label className="flex flex-col gap-1 text-sm text-zinc-600 dark:text-zinc-300">
-            카테고리
-            <input
-              type="text"
-              name="category"
-              defaultValue={category ?? ""}
-              placeholder="예: fashion"
-              className="rounded border border-zinc-300 px-3 py-2 text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
-            />
-          </label>
-          <label className="flex flex-col gap-1 text-sm text-zinc-600 dark:text-zinc-300">
-            정렬
-            <select
-              name="sort"
-              defaultValue={sort ?? "createdAt_desc"}
-              className="rounded border border-zinc-300 px-3 py-2 text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
-            >
-              <option value="createdAt_desc">최신순</option>
-              <option value="createdAt_asc">오래된순</option>
-              <option value="price_asc">가격 낮은순</option>
-              <option value="price_desc">가격 높은순</option>
-            </select>
-          </label>
-          <div className="flex items-end gap-2">
-            <button
-              type="submit"
-              className="rounded bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
-            >
-              적용
-            </button>
-            <Link
-              href="/"
-              className="rounded border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800"
-            >
-              초기화
-            </Link>
-          </div>
-        </form>
-        <p className="mb-4 text-sm text-zinc-500">
+        <h1 className="mb-8 text-3xl font-bold text-on-surface">상품 목록</h1>
+        <Card className="mb-6 p-5">
+          <form className="grid grid-cols-1 gap-3 md:grid-cols-4">
+            <input type="hidden" name="page" value="1" />
+            <input type="hidden" name="limit" value={limit} />
+            <Input type="text" name="q" label="검색어" defaultValue={q ?? ""} placeholder="상품명 검색" />
+            <Input type="text" name="category" label="카테고리" defaultValue={category ?? ""} placeholder="예: fashion" />
+            <label className="flex flex-col gap-1 text-sm text-on-surface">
+              <span className="text-xs font-medium tracking-wide text-on-surface/70">정렬</span>
+              <select
+                name="sort"
+                defaultValue={sort ?? "createdAt_desc"}
+                className="h-11 rounded-xl border border-outline bg-surface px-3 text-sm text-on-surface transition-colors focus:border-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
+              >
+                <option value="createdAt_desc">최신순</option>
+                <option value="createdAt_asc">오래된순</option>
+                <option value="price_asc">가격 낮은순</option>
+                <option value="price_desc">가격 높은순</option>
+              </select>
+            </label>
+            <div className="flex items-end gap-2">
+              <Button type="submit" size="sm">
+                적용
+              </Button>
+              <Link
+                href="/"
+                className="inline-flex items-center justify-center rounded-full border border-outline bg-surface px-4 py-2 text-sm font-medium text-on-surface transition-colors hover:bg-surface-variant focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2"
+              >
+                초기화
+              </Link>
+            </div>
+          </form>
+        </Card>
+        <p className="mb-4 text-sm text-on-surface/70">
           총 {meta.total}개 · {meta.page}/{totalPages} 페이지
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
           {products.length === 0 ? (
-            <div className="col-span-full text-center text-zinc-500">상품이 없습니다.</div>
+            <div className="col-span-full text-center text-on-surface/70">상품이 없습니다.</div>
           ) : (
             products.map((product) => (
               <ProductCard key={product.id} product={product} />
@@ -155,13 +139,13 @@ export default async function Home({
               limit: String(meta.limit),
             })}
             aria-disabled={!hasPrevPage}
-            className={`rounded px-4 py-2 text-sm font-medium ${
-              hasPrevPage ? "bg-zinc-900 text-white hover:bg-zinc-700" : "cursor-not-allowed bg-zinc-300 text-zinc-500"
+            className={`rounded px-4 py-2 text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2 ${
+              hasPrevPage ? "bg-primary text-on-primary hover:opacity-100" : "cursor-not-allowed bg-surface-variant text-on-surface/60"
             }`}
           >
             이전
           </Link>
-          <span className="text-sm text-zinc-500">
+          <span className="text-sm text-on-surface/70">
             {meta.page} / {totalPages}
           </span>
           <Link
@@ -173,8 +157,8 @@ export default async function Home({
               limit: String(meta.limit),
             })}
             aria-disabled={!hasNextPage}
-            className={`rounded px-4 py-2 text-sm font-medium ${
-              hasNextPage ? "bg-zinc-900 text-white hover:bg-zinc-700" : "cursor-not-allowed bg-zinc-300 text-zinc-500"
+            className={`rounded px-4 py-2 text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2 ${
+              hasNextPage ? "bg-primary text-on-primary hover:opacity-100" : "cursor-not-allowed bg-surface-variant text-on-surface/60"
             }`}
           >
             다음
