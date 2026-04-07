@@ -96,7 +96,7 @@ export default async function Home({
               <select
                 name="sort"
                 defaultValue={sort ?? "createdAt_desc"}
-                className="h-11 rounded-xl border border-outline bg-surface px-3 text-sm text-on-surface transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                className="h-11 rounded-xl border border-outline bg-surface px-3 text-sm text-on-surface transition-colors focus:border-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
               >
                 <option value="createdAt_desc">최신순</option>
                 <option value="createdAt_asc">오래된순</option>
@@ -110,7 +110,7 @@ export default async function Home({
               </Button>
               <Link
                 href="/"
-                className="inline-flex items-center justify-center rounded-full border border-outline bg-surface px-4 py-2 text-sm font-medium text-on-surface transition-colors hover:bg-surface-variant"
+                className="inline-flex items-center justify-center rounded-full border border-outline bg-surface px-4 py-2 text-sm font-medium text-on-surface transition-colors hover:bg-surface-variant focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2"
               >
                 초기화
               </Link>
@@ -139,7 +139,7 @@ export default async function Home({
               limit: String(meta.limit),
             })}
             aria-disabled={!hasPrevPage}
-            className={`rounded px-4 py-2 text-sm font-medium ${
+            className={`rounded px-4 py-2 text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2 ${
               hasPrevPage ? "bg-primary text-on-primary hover:opacity-100" : "cursor-not-allowed bg-surface-variant text-on-surface/60"
             }`}
           >
@@ -157,7 +157,7 @@ export default async function Home({
               limit: String(meta.limit),
             })}
             aria-disabled={!hasNextPage}
-            className={`rounded px-4 py-2 text-sm font-medium ${
+            className={`rounded px-4 py-2 text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2 ${
               hasNextPage ? "bg-primary text-on-primary hover:opacity-100" : "cursor-not-allowed bg-surface-variant text-on-surface/60"
             }`}
           >

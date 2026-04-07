@@ -9,7 +9,10 @@ interface ProductCardProps {
 
 export default function ProductCard({ product }: ProductCardProps) {
   return (
-    <Link href={`/products/${product.id}`} className="block">
+    <Link
+      href={`/products/${product.id}`}
+      className="block rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2"
+    >
       <Card className="flex h-full flex-col gap-2 p-3 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
         <Image
           src={product.thumbnailUrl || "/placeholder.png"}
