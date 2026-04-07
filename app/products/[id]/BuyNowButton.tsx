@@ -52,13 +52,13 @@ export default function BuyNowButton({ productId, quantity }: BuyNowButtonProps)
     <div>
       <button
         type="button"
-        className="px-6 py-3 rounded bg-zinc-900 text-white font-semibold hover:bg-zinc-700 transition disabled:bg-zinc-400"
+        className="px-6 py-3 rounded bg-secondary text-on-secondary font-semibold hover:opacity-90 transition disabled:bg-secondary/40"
         onClick={handleBuyNow}
         disabled={ui.loading}
       >
         {ui.loading ? "이동 중..." : "바로구매"}
       </button>
-      {ui.message && <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-300">{ui.message}</p>}
+      {ui.message && <p className="mt-2 text-sm text-on-surface/70">{ui.message}</p>}
     </div>
   );
 }
