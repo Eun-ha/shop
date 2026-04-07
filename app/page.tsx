@@ -105,7 +105,7 @@ export default async function Home({
               </select>
             </label>
             <div className="flex items-center gap-2 md:justify-end">
-              <Button type="submit" className="h-11 px-4 py-2 hover:translate-y-0 hover:shadow-sm">
+              <Button type="submit" className="h-11 px-4 py-2">
                 적용
               </Button>
               <Link
