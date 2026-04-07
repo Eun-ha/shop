@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/stores/auth-store";
 import { useAsyncUiState } from "@/lib/hooks/useAsyncUiState";
 import { parseApiErrorMessage } from "@/lib/client-api";
+import { Button } from "@/components/ui/Button";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
@@ -84,13 +85,9 @@ export default function AdminProductNewPage() {
           <option value="INACTIVE">비활성</option>
           <option value="SOLD_OUT">품절</option>
         </select>
-        <button
-          type="submit"
-          className="mt-4 px-8 py-3 rounded bg-primary text-on-primary font-semibold hover:opacity-90 transition"
-          disabled={ui.loading}
-        >
+        <Button type="submit" size="lg" className="mt-4" disabled={ui.loading}>
           {ui.loading ? "등록 중..." : "상품 등록"}
-        </button>
+        </Button>
       </form>
     </main>
   );

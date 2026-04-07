@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "@/lib/stores/auth-store";
 import type { User } from "@/lib/user";
 import type { Order } from "@/lib/order";
+import { Button } from "@/components/ui/Button";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
@@ -74,12 +75,9 @@ export default function MePage() {
         <div className="mb-2">이메일: <span className="font-mono">{user?.email}</span></div>
         <div className="mb-2">이름: <span className="font-mono">{user?.name || "-"}</span></div>
         <div className="mb-4">권한: <span className="font-mono">{user?.role}</span></div>
-        <button
-          onClick={handleLogout}
-          className="mt-2 rounded bg-surface-variant px-6 py-2 font-semibold text-on-surface transition hover:opacity-90"
-        >
+        <Button onClick={handleLogout} variant="secondary" className="mt-2">
           로그아웃
-        </button>
+        </Button>
       </section>
 
       <section className="rounded-lg border border-outline bg-surface p-6">

@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAsyncUiState } from "@/lib/hooks/useAsyncUiState";
 import { useAuthStore } from "@/lib/stores/auth-store";
 import { parseApiErrorMessage } from "@/lib/client-api";
+import { Button } from "@/components/ui/Button";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
@@ -61,14 +62,14 @@ export default function AddToCartButton({ productId, quantity }: AddToCartButton
 
   return (
     <div>
-      <button
+      <Button
         type="button"
-        className="px-6 py-3 rounded bg-primary text-on-primary font-semibold hover:opacity-90 transition disabled:bg-primary/40"
+        size="lg"
         onClick={() => addToCartMutation.mutate()}
         disabled={ui.loading || addToCartMutation.isPending}
       >
         {ui.loading || addToCartMutation.isPending ? "담는 중..." : "장바구니 담기"}
-      </button>
+      </Button>
       {ui.message && <p className="mt-2 text-sm text-on-surface/70">{ui.message}</p>}
     </div>
   );

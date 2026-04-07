@@ -1,5 +1,6 @@
 "use client";
 import { useLoginForm } from "./useLoginForm";
+import { Button } from "@/components/ui/Button";
 
 export default function LoginPage() {
   const { email, password, setEmail, setPassword, error, loading, handleSubmit } = useLoginForm();
@@ -25,13 +26,9 @@ export default function LoginPage() {
           onChange={(e) => setPassword(e.target.value)}
           required
         />
-        <button
-          type="submit"
-          className="mt-4 px-8 py-3 rounded bg-primary text-on-primary font-semibold hover:opacity-90 transition"
-          disabled={loading}
-        >
+        <Button type="submit" size="lg" className="mt-4" disabled={loading}>
           {loading ? "로그인 중..." : "로그인"}
-        </button>
+        </Button>
       </form>
     </main>
   );

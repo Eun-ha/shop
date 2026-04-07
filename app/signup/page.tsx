@@ -1,5 +1,6 @@
 "use client";
 import { useSignupForm } from "./useSignupForm";
+import { Button } from "@/components/ui/Button";
 
 export default function SignupPage() {
   const {
@@ -45,13 +46,9 @@ export default function SignupPage() {
           onChange={(e) => setPassword(e.target.value)}
           required
         />
-        <button
-          type="submit"
-          className="mt-4 px-8 py-3 rounded bg-primary text-on-primary font-semibold hover:opacity-90 transition"
-          disabled={loading}
-        >
+        <Button type="submit" size="lg" className="mt-4" disabled={loading}>
           {loading ? "가입 중..." : "회원가입"}
-        </button>
+        </Button>
       </form>
     </main>
   );

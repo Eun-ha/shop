@@ -6,6 +6,7 @@ import { useAuthStore } from "@/lib/stores/auth-store";
 import { useAsyncUiState } from "@/lib/hooks/useAsyncUiState";
 import type { Product } from "@/lib/product";
 import { parseApiErrorMessage } from "@/lib/client-api";
+import { Button } from "@/components/ui/Button";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
@@ -147,12 +148,12 @@ export default function AdminProductEditPage() {
           <option value="SOLD_OUT">품절</option>
         </select>
         <div className="flex gap-2 mt-4">
-          <button type="submit" className="px-8 py-3 rounded bg-primary text-on-primary font-semibold hover:opacity-90 transition" disabled={ui.loading || isMutating}>
+          <Button type="submit" size="lg" disabled={ui.loading || isMutating}>
             {ui.loading || isMutating ? "수정 중..." : "상품 수정"}
-          </button>
-          <button type="button" className="rounded bg-sale px-8 py-3 font-semibold text-on-sale transition hover:opacity-90" onClick={handleDelete} disabled={ui.loading || isMutating}>
+          </Button>
+          <Button type="button" size="lg" className="bg-sale text-on-sale hover:bg-sale/90" onClick={handleDelete} disabled={ui.loading || isMutating}>
             삭제
-          </button>
+          </Button>
         </div>
       </form>
     </main>

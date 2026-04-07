@@ -9,6 +9,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/lib/stores/auth-store";
 import { useCheckoutState } from "./useCheckoutState";
 import { parseApiErrorMessage } from "@/lib/client-api";
+import { Button } from "@/components/ui/Button";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
@@ -249,9 +250,9 @@ export default function CheckoutPage() {
           <input className="rounded border border-outline bg-surface px-4 py-2 text-on-surface" name="address2" placeholder="상세 주소" value={address.address2} onChange={handleChange} />
           <input className="rounded border border-outline bg-surface px-4 py-2 text-on-surface" name="city" placeholder="도시" value={address.city} onChange={handleChange} required />
           <input className="rounded border border-outline bg-surface px-4 py-2 text-on-surface" name="postalCode" placeholder="우편번호" value={address.postalCode} onChange={handleChange} required />
-          <button type="submit" className="mt-4 px-8 py-3 rounded bg-primary text-on-primary font-semibold hover:opacity-90 transition" disabled={submitting}>
+          <Button type="submit" size="lg" className="mt-4" disabled={submitting}>
             {submitting ? "결제 중..." : "결제하기"}
-          </button>
+          </Button>
         </form>
       </section>
     </main>

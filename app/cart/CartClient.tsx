@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import type { Cart } from "@/lib/cart";
 import { parseApiErrorMessage } from "@/lib/client-api";
 import { useAuthStore } from "@/lib/stores/auth-store";
+import { Button } from "@/components/ui/Button";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
@@ -125,13 +126,9 @@ export default function CartClient() {
         <div className="text-xl font-bold text-on-surface">총 합계: {cart.subtotal.amount.toLocaleString()}원</div>
       </div>
       <div className="flex justify-end mt-4">
-        <button
-          type="button"
-          onClick={() => router.push("/checkout")}
-          className="px-8 py-3 rounded bg-primary text-on-primary font-semibold hover:opacity-90 transition"
-        >
+        <Button type="button" size="lg" onClick={() => router.push("/checkout")}>
           주문하기
-        </button>
+        </Button>
       </div>
     </main>
   );
