@@ -1,17 +1,19 @@
 @import "tailwindcss";
 
 :root {
-  /* Material Design 3-ish semantic tokens (light) */
-  --md-sys-color-primary: #6750a4;
+  /* E-commerce friendly semantic tokens (light) */
+  --md-sys-color-primary: #2563eb;
   --md-sys-color-on-primary: #ffffff;
-  --md-sys-color-secondary: #625b71;
+  --md-sys-color-secondary: #111827;
   --md-sys-color-on-secondary: #ffffff;
-  --md-sys-color-background: #fffbfe;
-  --md-sys-color-on-background: #1c1b1f;
-  --md-sys-color-surface: #fffbfe;
-  --md-sys-color-on-surface: #1c1b1f;
-  --md-sys-color-surface-variant: #e7e0ec;
-  --md-sys-color-outline: #79747e;
+  --md-sys-color-background: #f9fafb;
+  --md-sys-color-on-background: #111827;
+  --md-sys-color-surface: #ffffff;
+  --md-sys-color-on-surface: #111827;
+  --md-sys-color-surface-variant: #f3f4f6;
+  --md-sys-color-outline: #d1d5db;
+  --md-sys-color-sale: #dc2626;
+  --md-sys-color-on-sale: #ffffff;
 
   /* Legacy aliases used by app shell */
   --background: var(--md-sys-color-background);
@@ -29,23 +31,27 @@
   --color-on-surface: var(--md-sys-color-on-surface);
   --color-surface-variant: var(--md-sys-color-surface-variant);
   --color-outline: var(--md-sys-color-outline);
+  --color-sale: var(--md-sys-color-sale);
+  --color-on-sale: var(--md-sys-color-on-sale);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    /* Material Design 3-ish semantic tokens (dark) */
-    --md-sys-color-primary: #d0bcff;
-    --md-sys-color-on-primary: #381e72;
-    --md-sys-color-secondary: #ccc2dc;
-    --md-sys-color-on-secondary: #332d41;
-    --md-sys-color-background: #10131a;
-    --md-sys-color-on-background: #e6e1e5;
-    --md-sys-color-surface: #10131a;
-    --md-sys-color-on-surface: #e6e1e5;
-    --md-sys-color-surface-variant: #49454f;
-    --md-sys-color-outline: #938f99;
+    /* E-commerce friendly semantic tokens (dark) */
+    --md-sys-color-primary: #3b82f6;
+    --md-sys-color-on-primary: #ffffff;
+    --md-sys-color-secondary: #e5e7eb;
+    --md-sys-color-on-secondary: #111827;
+    --md-sys-color-background: #030712;
+    --md-sys-color-on-background: #f9fafb;
+    --md-sys-color-surface: #111827;
+    --md-sys-color-on-surface: #f9fafb;
+    --md-sys-color-surface-variant: #1f2937;
+    --md-sys-color-outline: #374151;
+    --md-sys-color-sale: #f87171;
+    --md-sys-color-on-sale: #111827;
 
     --background: var(--md-sys-color-background);
     --foreground: var(--md-sys-color-on-background);

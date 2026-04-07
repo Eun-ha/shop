@@ -26,7 +26,7 @@ export default function ProductCard({ product }: ProductCardProps) {
             {product.description}
           </span>
           <div className="flex items-center gap-2 mt-1">
-            <span className="text-base font-bold text-primary">
+            <span className="text-base font-bold text-sale">
               {product.price.amount.toLocaleString()}원
             </span>
             {product.compareAtPrice && (
