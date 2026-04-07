@@ -1,7 +1,7 @@
 "use client";
 import type { Cart, CartItem } from "@/lib/cart";
 import type { Order } from "@/lib/order";
-import Image from "next/image";
+import FallbackImage from "@/components/FallbackImage";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMemo } from "react";
@@ -203,7 +203,7 @@ export default function CheckoutPage() {
         <div className="flex flex-col gap-4">
           {itemsToOrder.map((item) => (
             <div key={item.itemId} className="flex gap-4 items-center border-b pb-4">
-              <Image src={getProductImage(item.productId)} alt={item.name} width={60} height={60} className="rounded bg-surface-variant object-cover w-16 h-16" unoptimized />
+              <FallbackImage src={getProductImage(item.productId)} alt={item.name} width={60} height={60} className="rounded bg-surface-variant object-cover w-16 h-16" unoptimized />
               <div className="flex-1">
                 <div className="font-semibold text-on-surface">{item.name}</div>
                 <div className="text-on-surface/70 text-sm">

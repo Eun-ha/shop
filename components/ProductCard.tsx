@@ -1,4 +1,4 @@
-import Image from "next/image";
+import FallbackImage from "@/components/FallbackImage";
 import Link from "next/link";
 import type { Product } from "@/lib/product";
 import { Card } from "@/components/ui/Card";
@@ -14,8 +14,8 @@ export default function ProductCard({ product }: ProductCardProps) {
       className="block rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2"
     >
       <Card className="flex h-full flex-col gap-2 p-3 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-        <Image
-          src={product.thumbnailUrl || "/placeholder.png"}
+        <FallbackImage
+          src={product.thumbnailUrl}
           alt={product.name}
           width={300}
           height={300}
