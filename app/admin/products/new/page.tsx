@@ -48,11 +48,11 @@ export default function AdminProductNewPage() {
 
   return (
     <main className="max-w-md mx-auto py-16 px-4">
-      <h1 className="text-2xl font-bold mb-8 text-zinc-900 dark:text-zinc-50">상품 등록</h1>
-      {ui.message && <div className="mb-4 text-red-500">{ui.message}</div>}
+      <h1 className="text-2xl font-bold mb-8 text-on-surface">상품 등록</h1>
+      {ui.message && <div className="mb-4 text-sale">{ui.message}</div>}
       <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
         <input
-          className="border rounded px-4 py-2"
+          className="rounded border border-outline bg-surface px-4 py-2 text-on-surface"
           type="text"
           placeholder="상품명"
           value={name}
@@ -60,7 +60,7 @@ export default function AdminProductNewPage() {
           required
         />
         <input
-          className="border rounded px-4 py-2"
+          className="rounded border border-outline bg-surface px-4 py-2 text-on-surface"
           type="number"
           placeholder="가격(원)"
           value={price}
@@ -68,7 +68,7 @@ export default function AdminProductNewPage() {
           required
         />
         <input
-          className="border rounded px-4 py-2"
+          className="rounded border border-outline bg-surface px-4 py-2 text-on-surface"
           type="number"
           placeholder="재고"
           value={stock}
@@ -76,7 +76,7 @@ export default function AdminProductNewPage() {
           required
         />
         <select
-          className="border rounded px-4 py-2"
+          className="rounded border border-outline bg-surface px-4 py-2 text-on-surface"
           value={status}
           onChange={e => setStatus(e.target.value)}
         >
@@ -86,7 +86,7 @@ export default function AdminProductNewPage() {
         </select>
         <button
           type="submit"
-          className="mt-4 px-8 py-3 rounded bg-blue-600 text-white font-semibold hover:bg-blue-700 transition"
+          className="mt-4 px-8 py-3 rounded bg-primary text-on-primary font-semibold hover:opacity-90 transition"
           disabled={ui.loading}
         >
           {ui.loading ? "등록 중..." : "상품 등록"}
