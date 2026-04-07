@@ -1,5 +1,5 @@
 import type { Product } from "@/lib/product";
-import Image from "next/image";
+import FallbackImage from "@/components/FallbackImage";
 import PurchaseActions from "./PurchaseActions";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
@@ -25,8 +25,8 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
     <main className="max-w-3xl mx-auto py-16 px-4">
       <div className="flex flex-col md:flex-row gap-8">
         <div className="flex-1">
-          <Image
-            src={product.thumbnailUrl || "/placeholder.png"}
+          <FallbackImage
+            src={product.thumbnailUrl}
             alt={product.name}
             width={500}
             height={500}
@@ -35,7 +35,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
           />
           <div className="flex gap-2 mt-2">
             {product.images?.map((img, i) => (
-              <Image
+              <FallbackImage
                 key={i}
                 src={img}
                 alt={product.name + " 이미지"}

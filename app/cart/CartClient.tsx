@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import Image from "next/image";
+import FallbackImage from "@/components/FallbackImage";
 import { useRouter } from "next/navigation";
 import type { Cart } from "@/lib/cart";
 import { parseApiErrorMessage } from "@/lib/client-api";
@@ -76,7 +76,7 @@ export default function CartClient() {
       <div className="flex flex-col gap-6">
         {cart.items.map((item) => (
           <div key={item.itemId} className="flex gap-4 items-center border-b pb-4">
-            <Image
+            <FallbackImage
               src={item.productId.startsWith("prod_01") ? "https://placehold.co/600x600" : "https://placehold.co/600x600?3"}
               alt={item.name}
               width={80}

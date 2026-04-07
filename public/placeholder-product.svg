@@ -1,0 +1,9 @@
+<svg width="800" height="800" viewBox="0 0 800 800" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">상품 이미지 준비중</title>
+  <desc id="desc">이미지를 불러올 수 없을 때 표시되는 기본 상품 이미지</desc>
+  <rect width="800" height="800" fill="#F4F4F5"/>
+  <rect x="180" y="200" width="440" height="320" rx="32" fill="#E4E4E7"/>
+  <circle cx="300" cy="300" r="36" fill="#A1A1AA"/>
+  <path d="M220 470L330 360L430 450L500 390L580 470V500H220V470Z" fill="#71717A"/>
+  <text x="400" y="590" text-anchor="middle" fill="#52525B" font-size="34" font-family="Arial, sans-serif" font-weight="700">NO IMAGE</text>
+</svg>
