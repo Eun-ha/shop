@@ -1,6 +1,9 @@
 import ProductCard from "@/components/ProductCard";
 import Link from "next/link";
 import type { Product } from "@/lib/product";
+import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
 const API_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
 type ProductsResponse = {
@@ -82,57 +85,38 @@ export default async function Home({
     <main className="min-h-screen bg-background py-12 px-4 text-foreground">
       <div className="max-w-5xl mx-auto">
         <h1 className="mb-8 text-3xl font-bold text-on-surface">상품 목록</h1>
-        <form className="mb-6 grid grid-cols-1 gap-3 rounded border border-outline bg-surface p-4 md:grid-cols-4">
-          <input type="hidden" name="page" value="1" />
-          <input type="hidden" name="limit" value={limit} />
-          <label className="flex flex-col gap-1 text-sm text-on-surface">
-            검색어
-            <input
-              type="text"
-              name="q"
-              defaultValue={q ?? ""}
-              placeholder="상품명 검색"
-              className="rounded border border-outline bg-background px-3 py-2 text-on-surface"
-            />
-          </label>
-          <label className="flex flex-col gap-1 text-sm text-on-surface">
-            카테고리
-            <input
-              type="text"
-              name="category"
-              defaultValue={category ?? ""}
-              placeholder="예: fashion"
-              className="rounded border border-outline bg-background px-3 py-2 text-on-surface"
-            />
-          </label>
-          <label className="flex flex-col gap-1 text-sm text-on-surface">
-            정렬
-            <select
-              name="sort"
-              defaultValue={sort ?? "createdAt_desc"}
-              className="rounded border border-outline bg-background px-3 py-2 text-on-surface"
-            >
-              <option value="createdAt_desc">최신순</option>
-              <option value="createdAt_asc">오래된순</option>
-              <option value="price_asc">가격 낮은순</option>
-              <option value="price_desc">가격 높은순</option>
-            </select>
-          </label>
-          <div className="flex items-end gap-2">
-            <button
-              type="submit"
-              className="rounded bg-primary px-4 py-2 text-sm font-medium text-on-primary opacity-95 hover:opacity-100"
-            >
-              적용
-            </button>
-            <Link
-              href="/"
-              className="rounded border border-outline px-4 py-2 text-sm font-medium text-on-surface hover:bg-surface-variant"
-            >
-              초기화
-            </Link>
-          </div>
-        </form>
+        <Card className="mb-6 p-5">
+          <form className="grid grid-cols-1 gap-3 md:grid-cols-4">
+            <input type="hidden" name="page" value="1" />
+            <input type="hidden" name="limit" value={limit} />
+            <Input type="text" name="q" label="검색어" defaultValue={q ?? ""} placeholder="상품명 검색" />
+            <Input type="text" name="category" label="카테고리" defaultValue={category ?? ""} placeholder="예: fashion" />
+            <label className="flex flex-col gap-1 text-sm text-on-surface">
+              <span className="text-xs font-medium tracking-wide text-on-surface/70">정렬</span>
+              <select
+                name="sort"
+                defaultValue={sort ?? "createdAt_desc"}
+                className="h-11 rounded-xl border border-outline bg-surface px-3 text-sm text-on-surface transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              >
+                <option value="createdAt_desc">최신순</option>
+                <option value="createdAt_asc">오래된순</option>
+                <option value="price_asc">가격 낮은순</option>
+                <option value="price_desc">가격 높은순</option>
+              </select>
+            </label>
+            <div className="flex items-end gap-2">
+              <Button type="submit" size="sm">
+                적용
+              </Button>
+              <Link
+                href="/"
+                className="inline-flex items-center justify-center rounded-full border border-outline bg-surface px-4 py-2 text-sm font-medium text-on-surface transition-colors hover:bg-surface-variant"
+              >
+                초기화
+              </Link>
+            </div>
+          </form>
+        </Card>
         <p className="mb-4 text-sm text-on-surface/70">
           총 {meta.total}개 · {meta.page}/{totalPages} 페이지
         </p>

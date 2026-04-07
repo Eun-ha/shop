@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { Product } from "@/lib/product";
+import { Card } from "@/components/ui/Card";
 
 interface ProductCardProps {
   product: Product;
@@ -9,16 +10,16 @@ interface ProductCardProps {
 export default function ProductCard({ product }: ProductCardProps) {
   return (
     <Link href={`/products/${product.id}`} className="block">
-      <div className="flex flex-col gap-2 rounded-lg border border-outline bg-surface p-4 shadow-sm transition hover:shadow-md">
+      <Card className="flex h-full flex-col gap-2 p-3 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
         <Image
           src={product.thumbnailUrl || "/placeholder.png"}
           alt={product.name}
           width={300}
           height={300}
-          className="h-60 w-full rounded-md bg-surface-variant object-cover"
+          className="h-60 w-full rounded-xl bg-surface-variant object-cover"
           unoptimized
         />
-        <div className="flex flex-col gap-1 mt-2">
+        <div className="mt-2 flex flex-col gap-1">
           <span className="text-lg font-semibold text-on-surface">
             {product.name}
           </span>
@@ -36,7 +37,7 @@ export default function ProductCard({ product }: ProductCardProps) {
             )}
           </div>
         </div>
-      </div>
+      </Card>
     </Link>
   );
 }
