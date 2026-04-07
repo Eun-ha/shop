@@ -1,26 +1,59 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Material Design 3-ish semantic tokens (light) */
+  --md-sys-color-primary: #6750a4;
+  --md-sys-color-on-primary: #ffffff;
+  --md-sys-color-secondary: #625b71;
+  --md-sys-color-on-secondary: #ffffff;
+  --md-sys-color-background: #fffbfe;
+  --md-sys-color-on-background: #1c1b1f;
+  --md-sys-color-surface: #fffbfe;
+  --md-sys-color-on-surface: #1c1b1f;
+  --md-sys-color-surface-variant: #e7e0ec;
+  --md-sys-color-outline: #79747e;
+
+  /* Legacy aliases used by app shell */
+  --background: var(--md-sys-color-background);
+  --foreground: var(--md-sys-color-on-background);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-primary: var(--md-sys-color-primary);
+  --color-on-primary: var(--md-sys-color-on-primary);
+  --color-secondary: var(--md-sys-color-secondary);
+  --color-on-secondary: var(--md-sys-color-on-secondary);
+  --color-surface: var(--md-sys-color-surface);
+  --color-on-surface: var(--md-sys-color-on-surface);
+  --color-surface-variant: var(--md-sys-color-surface-variant);
+  --color-outline: var(--md-sys-color-outline);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    /* Material Design 3-ish semantic tokens (dark) */
+    --md-sys-color-primary: #d0bcff;
+    --md-sys-color-on-primary: #381e72;
+    --md-sys-color-secondary: #ccc2dc;
+    --md-sys-color-on-secondary: #332d41;
+    --md-sys-color-background: #10131a;
+    --md-sys-color-on-background: #e6e1e5;
+    --md-sys-color-surface: #10131a;
+    --md-sys-color-on-surface: #e6e1e5;
+    --md-sys-color-surface-variant: #49454f;
+    --md-sys-color-outline: #938f99;
+
+    --background: var(--md-sys-color-background);
+    --foreground: var(--md-sys-color-on-background);
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
