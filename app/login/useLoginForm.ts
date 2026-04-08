@@ -22,7 +22,13 @@ export function useLoginForm() {
     });
 
     if (res.ok) {
-      setAuthenticated(true);
+      const data = (await res.json().catch(() => null)) as {
+        user?: {
+          role?: "USER" | "ADMIN";
+        };
+      } | null;
+      const role = data?.user?.role === "ADMIN" ? "ADMIN" : "USER";
+      setAuthenticated(true, role);
       ui.succeed();
       window.location.href = "/";
       return;
