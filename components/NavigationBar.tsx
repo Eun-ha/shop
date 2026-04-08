@@ -10,6 +10,7 @@ export default function NavigationBar() {
   const router = useRouter();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const role = useAuthStore((state) => state.role);
   const initialized = useAuthStore((state) => state.initialized);
   const clearAuth = useAuthStore((state) => state.clearAuth);
 
@@ -34,6 +35,15 @@ export default function NavigationBar() {
       <nav className="mx-auto flex w-full max-w-5xl items-center justify-end gap-2 px-4 py-3">
         {initialized && isAuthenticated ? (
           <>
+            {role === "ADMIN" && (
+              <Link
+                href="/admin/products"
+                className="inline-flex items-center justify-center rounded-full border border-outline bg-surface px-4 py-2 text-sm font-medium text-on-surface transition-colors hover:bg-surface-variant focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2"
+              >
+                관리자
+              </Link>
+            )}
+
             <Link
               href="/me"
               className="inline-flex items-center justify-center rounded-full border border-outline bg-surface px-4 py-2 text-sm font-medium text-on-surface transition-colors hover:bg-surface-variant focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2"
