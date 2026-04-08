@@ -8,6 +8,40 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 type Body = { email: string; password: string; name?: string };
 
+function isEmpty(value: string | undefined) {
+  return !value || value.trim().length === 0;
+}
+
+function getDatabaseErrorResponse(error: unknown) {
+  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    if (error.code === "P1000") {
+      return fail("INTERNAL_ERROR", "Database authentication failed. Check DATABASE_URL credentials.", 500);
+    }
+
+    if (error.code === "P1001") {
+      return fail("INTERNAL_ERROR", "Cannot reach database server. Check host, port, and network allowlist.", 500);
+    }
+
+    if (error.code === "P2021" || error.code === "P2022") {
+      return fail(
+        "INTERNAL_ERROR",
+        "Database schema is out of date. Run Prisma migrations on the deployment database.",
+        500,
+      );
+    }
+  }
+
+  if (error instanceof Prisma.PrismaClientInitializationError) {
+    return fail("INTERNAL_ERROR", "Prisma client initialization failed. Check DATABASE_URL and SSL options.", 500);
+  }
+
+  return fail(
+    "INTERNAL_ERROR",
+    "Failed to create user. Check database connection and Prisma migrations on the server.",
+    500,
+  );
+}
+
 export async function POST(req: Request) {
   const body = await parseJson<Body>(req).catch(() => null);
   const email = body?.email?.trim().toLowerCase();
@@ -26,7 +60,7 @@ export async function POST(req: Request) {
     return fail("INVALID_REQUEST", "Password must be at least 8 characters", 400);
   }
 
-  if (!process.env.DATABASE_URL) {
+  if (isEmpty(process.env.DATABASE_URL)) {
     return fail(
       "INTERNAL_ERROR",
       "Server database is not configured. Set DATABASE_URL in the deployment environment.",
@@ -55,10 +89,7 @@ export async function POST(req: Request) {
       return fail("INVALID_REQUEST", "Email already exists", 409);
     }
 
-    return fail(
-      "INTERNAL_ERROR",
-      "Failed to create user. Check database connection and Prisma migrations on the server.",
-      500,
-    );
+    console.error("[signup] failed to create user", error);
+    return getDatabaseErrorResponse(error);
   }
 }
