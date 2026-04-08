@@ -8,7 +8,8 @@ export type ApiErrorCode =
   | "OUT_OF_STOCK"
   | "INVALID_REQUEST"
   | "ORDER_NOT_FOUND"
-  | "BUY_NOW_INTENT_NOT_FOUND";
+  | "BUY_NOW_INTENT_NOT_FOUND"
+  | "INTERNAL_ERROR";
 
 export function ok<T>(data: T, init?: ResponseInit) {
   return NextResponse.json(data, { status: 200, ...init });
@@ -18,7 +19,7 @@ export function created<T>(data: T) {
   return NextResponse.json(data, { status: 201 });
 }
 
-export function fail(code: ApiErrorCode, message: string, status: number, details?: any) {
+export function fail(code: ApiErrorCode, message: string, status: number, details?: unknown) {
   return NextResponse.json({ code, message, details }, { status });
 }
 
