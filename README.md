@@ -116,17 +116,17 @@ docker compose up -d postgres
 ### 4-3. 의존성 설치 및 Prisma 준비
 
 ```bash
-npm ci
-npx prisma generate
-npx prisma migrate deploy
+pnpm install --frozen-lockfile
+pnpm exec prisma generate
+pnpm exec prisma migrate deploy
 ```
 
-> TypeScript에서 Prisma 타입이 어긋나면 `npx prisma generate` 후 dev 서버/TS 서버를 재시작하세요.
+> TypeScript에서 Prisma 타입이 어긋나면 `pnpm exec prisma generate` 후 dev 서버/TS 서버를 재시작하세요.
 
 ### 4-4. 개발 서버 실행
 
 ```bash
-npm run dev
+pnpm dev
 ```
 
 브라우저:
@@ -139,11 +139,11 @@ npm run dev
 ## 5) 스크립트
 
 ```bash
-npm run dev       # 개발 서버
-npm run build     # 프로덕션 빌드
-npm run start     # 프로덕션 서버 시작
-npm run lint      # ESLint
-npm run prisma:generate
+pnpm dev       # 개발 서버
+pnpm build     # 프로덕션 빌드
+pnpm start     # 프로덕션 서버 시작
+pnpm lint      # ESLint
+pnpm prisma:generate
 ```
 
 ---
@@ -168,7 +168,7 @@ npm run prisma:generate
 현재 기본 컴포넌트 테스트가 포함되어 있습니다.
 
 ```bash
-npm test
+pnpm test
 ```
 
 또는 프로젝트에 맞는 테스트 실행 스크립트를 추가해 확장할 수 있습니다.
