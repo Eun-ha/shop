@@ -6,7 +6,7 @@ const OFFLINE_ENGINE_PATTERNS = [
 ];
 
 function runGenerate() {
-  return spawnSync("npx", ["prisma", "generate"], {
+  return spawnSync("pnpm", ["exec", "prisma", "generate"], {
     stdio: "pipe",
     encoding: "utf8",
     env: {

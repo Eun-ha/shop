@@ -9,8 +9,8 @@
     "lint": "eslint",
     "postinstall": "node scripts/prisma-generate.cjs",
     "prisma:generate": "prisma generate",
-    "predev": "npm run prisma:generate",
-    "prebuild": "npm run prisma:generate"
+    "predev": "pnpm run prisma:generate",
+    "prebuild": "pnpm run prisma:generate"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.6.0",
@@ -42,5 +42,6 @@
     "tailwindcss": "^4",
     "ts-jest": "^29.4.6",
     "typescript": "^5.9.3"
-  }
+  },
+  "packageManager": "pnpm@10.18.3"
 }
