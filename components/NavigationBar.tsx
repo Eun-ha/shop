@@ -45,6 +45,13 @@ export default function NavigationBar() {
             )}
 
             <Link
+              href="/cart"
+              className="inline-flex items-center justify-center rounded-full border border-outline bg-surface px-4 py-2 text-sm font-medium text-on-surface transition-colors hover:bg-surface-variant focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2"
+            >
+              장바구니
+            </Link>
+
+            <Link
               href="/me"
               className="inline-flex items-center justify-center rounded-full border border-outline bg-surface px-4 py-2 text-sm font-medium text-on-surface transition-colors hover:bg-surface-variant focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2"
             >
