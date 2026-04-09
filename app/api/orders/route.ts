@@ -53,18 +53,50 @@ export async function POST(req: Request) {
     return fail("INVALID_REQUEST", "cart is empty", 400);
   }
 
-  for (const it of cartDto.items) {
-    const p = await prisma.product.findUnique({ where: { id: it.productId } });
-    if (!p) return fail("PRODUCT_NOT_FOUND", "Product not found.", 404, { productId: it.productId });
-    if (p.stock < it.quantity) return fail("OUT_OF_STOCK", "Insufficient stock.", 409, { productId: it.productId, stock: p.stock });
-  }
+  const result = await prisma.$transaction(async tx => {
+    for (const it of cartDto.items) {
+      const p = await tx.product.findUnique({ where: { id: it.productId } });
 
-  const order = await prisma.order.create({
-    data: shippingAddressFromCartOrderInput(cartDto, body.shippingAddress),
-    include: { items: true },
+      if (!p) {
+        return { order: null, error: fail("PRODUCT_NOT_FOUND", "Product not found.", 404, { productId: it.productId }) };
+      }
+
+      if (p.status !== "ACTIVE") {
+        return { order: null, error: fail("OUT_OF_STOCK", "Product is not for sale.", 409, { productId: it.productId }) };
+      }
+
+      if (p.stock < it.quantity) {
+        return {
+          order: null,
+          error: fail("OUT_OF_STOCK", "Insufficient stock.", 409, { productId: it.productId, stock: p.stock }),
+        };
+      }
+    }
+
+    const createdOrder = await tx.order.create({
+      data: shippingAddressFromCartOrderInput(cartDto, body.shippingAddress),
+      include: { items: true },
+    });
+
+    for (const it of cartDto.items) {
+      await tx.product.update({
+        where: { id: it.productId },
+        data: {
+          stock: {
+            decrement: it.quantity,
+          },
+        },
+      });
+    }
+
+    await tx.cartItem.deleteMany({ where: { cartId: cart.id } });
+
+    return { order: createdOrder, error: null };
   });
 
-  await prisma.cartItem.deleteMany({ where: { cartId: cart.id } });
+  if (result.error) {
+    return result.error;
+  }
 
-  return created({ order: toOrderDto(order) });
+  return created({ order: toOrderDto(result.order) });
 }
