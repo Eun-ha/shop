@@ -5,7 +5,8 @@
 
 ## 1) 프로젝트 개요
 
-- **Frontend**: Next.js 16, React 19, Tailwind CSS 4, TanStack Query
+- **Frontend**: Next.js 16, React 19, Tailwind CSS 4
+- **State Management**: TanStack Query(서버 상태) + Zustand(클라이언트 인증 상태)
 - **Backend(API)**: Next.js Route Handlers (`app/api/**`)
 - **DB/ORM**: PostgreSQL + Prisma
 - **Auth**: JWT(access token) + HttpOnly Cookie
