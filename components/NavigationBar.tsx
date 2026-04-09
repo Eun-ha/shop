@@ -32,9 +32,32 @@ export default function NavigationBar() {
 
   return (
     <header className="border-b border-outline bg-surface">
-      <nav className="mx-auto flex w-full max-w-5xl items-center justify-end gap-2 px-4 py-3">
-        {initialized && isAuthenticated ? (
-          <>
+      <nav className="mx-auto flex w-full max-w-5xl items-center justify-between gap-3 px-4 py-3">
+        <div className="flex items-center gap-2">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm font-semibold text-on-surface transition-colors hover:bg-surface-variant focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2"
+          >
+            <span
+              aria-hidden="true"
+              className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary text-xs font-bold text-white"
+            >
+              S
+            </span>
+            쇼핑몰
+          </Link>
+
+          <Link
+            href="/"
+            className="inline-flex items-center justify-center rounded-full border border-outline bg-surface px-4 py-2 text-sm font-medium text-on-surface transition-colors hover:bg-surface-variant focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2"
+          >
+            상품 리스트
+          </Link>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {initialized && isAuthenticated ? (
+            <>
             {role === "ADMIN" && (
               <Link
                 href="/admin/products"
@@ -68,15 +91,16 @@ export default function NavigationBar() {
             >
               {isLoggingOut ? "로그아웃 중..." : "로그아웃"}
             </Button>
-          </>
-        ) : (
-          <Link
-            href="/login"
-            className="inline-flex items-center justify-center rounded-full border border-outline bg-surface px-4 py-2 text-sm font-medium text-on-surface transition-colors hover:bg-surface-variant focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2"
-          >
-            로그인
-          </Link>
-        )}
+            </>
+          ) : (
+            <Link
+              href="/login"
+              className="inline-flex items-center justify-center rounded-full border border-outline bg-surface px-4 py-2 text-sm font-medium text-on-surface transition-colors hover:bg-surface-variant focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2"
+            >
+              로그인
+            </Link>
+          )}
+        </div>
       </nav>
     </header>
   );

@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useLoginForm } from "./useLoginForm";
 import { Button } from "@/components/ui/Button";
 
@@ -30,6 +31,13 @@ export default function LoginPage() {
           {loading ? "로그인 중..." : "로그인"}
         </Button>
       </form>
+
+      <section className="mt-8 rounded border border-outline bg-surface p-4 text-sm text-on-surface/80">
+        <p className="mb-2">아직 회원이 아니신가요?</p>
+        <Link className="font-semibold text-primary hover:underline" href="/signup">
+          회원가입 하러가기
+        </Link>
+      </section>
     </main>
   );
 }
