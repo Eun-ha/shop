@@ -47,12 +47,6 @@ export default function NavigationBar() {
             쇼핑몰
           </Link>
 
-          <Link
-            href="/"
-            className="inline-flex items-center justify-center rounded-full border border-outline bg-surface px-4 py-2 text-sm font-medium text-on-surface transition-colors hover:bg-surface-variant focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2"
-          >
-            상품 리스트
-          </Link>
         </div>
 
         <div className="flex items-center gap-2">
