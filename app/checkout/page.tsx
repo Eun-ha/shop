@@ -1,13 +1,10 @@
 "use client";
-import type { Cart, CartItem } from "@/lib/cart";
 import type { Order } from "@/lib/order";
 import FallbackImage from "@/components/FallbackImage";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 import { useMemo } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useAuthStore } from "@/lib/stores/auth-store";
 import { useCheckoutState } from "./useCheckoutState";
+import { useCheckoutSource } from "./useCheckoutSource";
 import { parseApiErrorMessage } from "@/lib/client-api";
 import { Button } from "@/components/ui/Button";
 
@@ -18,66 +15,23 @@ function getProductImage(productId: string) {
 }
 
 export default function CheckoutPage() {
-  const searchParams = useSearchParams();
-  const queryClient = useQueryClient();
-  const isBuyNowMode = searchParams.get("mode") === "buy-now";
-  const buyNowIntentId = searchParams.get("intentId") || "";
-
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  const initialized = useAuthStore((state) => state.initialized);
+  const {
+    items,
+    isLoading,
+    fetchError,
+    invalidStateMessage,
+    emptyItemsMessage,
+    isAuthenticated,
+    canEditQuantity,
+    updateQuantity,
+    isQuantityPending,
+    quantityError,
+  } = useCheckoutSource();
 
   const { address, error, success, ordered, submitting, setAddressField, startSubmit, setSubmitError, setSubmitSuccess, resetMessages } =
     useCheckoutState();
 
-
-  const cartQuery = useQuery<Cart>({
-    queryKey: ["checkout-cart", isAuthenticated],
-    enabled: initialized && isAuthenticated && !isBuyNowMode,
-    queryFn: async () => {
-      const res = await fetch(`${API_BASE_URL}/api/cart`, {
-        cache: "no-store",
-      });
-      if (!res.ok) throw new Error("장바구니를 불러올 수 없습니다.");
-      return res.json();
-    },
-    retry: false,
-  });
-
-  const buyNowQuery = useQuery<{ item: CartItem }>({
-    queryKey: ["checkout-buy-now", buyNowIntentId, isAuthenticated],
-    enabled: initialized && isAuthenticated && isBuyNowMode && Boolean(buyNowIntentId),
-    queryFn: async () => {
-      const res = await fetch(`${API_BASE_URL}/api/buy-now/${encodeURIComponent(buyNowIntentId)}`, {
-        cache: "no-store",
-      });
-      if (!res.ok) throw new Error("바로구매 상품을 불러올 수 없습니다.");
-      return res.json();
-    },
-    retry: false,
-  });
-
-  const quantityMutation = useMutation({
-    mutationFn: async ({ itemId, quantity }: { itemId: string; quantity: number }) => {
-      const res = await fetch(`${API_BASE_URL}/api/cart/items/${encodeURIComponent(itemId)}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ quantity }),
-      });
-      if (!res.ok) throw new Error(await parseApiErrorMessage(res, "수량 변경에 실패했습니다."));
-      return (await res.json()) as Cart;
-    },
-    onSuccess: (updatedCart) => {
-      queryClient.setQueryData(["checkout-cart", isAuthenticated], updatedCart);
-      queryClient.setQueryData(["cart", isAuthenticated], updatedCart);
-    },
-  });
-
-  const itemsToOrder = useMemo(() => {
-    if (isBuyNowMode) return buyNowQuery.data?.item ? [buyNowQuery.data.item] : [];
-    return cartQuery.data?.items || [];
-  }, [isBuyNowMode, buyNowQuery.data, cartQuery.data]);
-
-  const subtotalAmount = useMemo(() => itemsToOrder.reduce((sum, item) => sum + item.lineTotal.amount, 0), [itemsToOrder]);
+  const subtotalAmount = useMemo(() => items.reduce((sum, item) => sum + item.lineTotal.amount, 0), [items]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setAddressField(e.target.name as keyof typeof address, e.target.value);
@@ -92,8 +46,8 @@ export default function CheckoutPage() {
       return;
     }
 
-    if (itemsToOrder.length === 0) {
-      setSubmitError(isBuyNowMode ? "바로구매할 상품이 없습니다." : "장바구니가 비어 있습니다.");
+    if (items.length === 0) {
+      setSubmitError(emptyItemsMessage);
       return;
     }
 
@@ -104,16 +58,14 @@ export default function CheckoutPage() {
 
     startSubmit();
     const body = {
-      items: itemsToOrder.map((item) => ({ productId: item.productId, quantity: item.quantity })),
+      items: items.map((item) => ({ productId: item.productId, quantity: item.quantity })),
       shippingAddress: address,
     };
 
     try {
       const res = await fetch(`${API_BASE_URL}/api/checkout`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
 
@@ -125,8 +77,6 @@ export default function CheckoutPage() {
       }
     } catch {
       setSubmitError("네트워크 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
-    } finally {
-      // submitting state is managed in reducer by success/error actions
     }
   };
 
@@ -178,21 +128,12 @@ export default function CheckoutPage() {
     );
   }
 
-  const loading = !initialized || cartQuery.isLoading || buyNowQuery.isLoading;
-  if (loading) return <div className="py-16 text-center text-on-surface/70">로딩 중...</div>;
-
+  if (isLoading) return <div className="py-16 text-center text-on-surface/70">로딩 중...</div>;
   if (!isAuthenticated) return <div className="max-w-2xl mx-auto py-16 text-center text-sale">로그인이 필요합니다.</div>;
-  if (isBuyNowMode && !buyNowIntentId) return <div className="max-w-2xl mx-auto py-16 text-center text-sale">바로구매 정보가 없습니다. 다시 시도해 주세요.</div>;
-
-  const queryError = isBuyNowMode ? buyNowQuery.error : cartQuery.error;
-  if (queryError && itemsToOrder.length === 0) {
-    return <div className="max-w-2xl mx-auto py-16 text-center text-sale">{isBuyNowMode ? "바로구매 상품을 불러올 수 없습니다." : "장바구니를 불러올 수 없습니다."}</div>;
-  }
-
-  if (error && itemsToOrder.length === 0) return <div className="max-w-2xl mx-auto py-16 text-center text-sale">{error}</div>;
-  if (itemsToOrder.length === 0) {
-    return <div className="max-w-2xl mx-auto py-16 text-center text-on-surface/70">{isBuyNowMode ? "바로구매할 상품이 없습니다." : "장바구니가 비어 있습니다."}</div>;
-  }
+  if (invalidStateMessage) return <div className="max-w-2xl mx-auto py-16 text-center text-sale">{invalidStateMessage}</div>;
+  if (fetchError && items.length === 0) return <div className="max-w-2xl mx-auto py-16 text-center text-sale">{fetchError}</div>;
+  if (error && items.length === 0) return <div className="max-w-2xl mx-auto py-16 text-center text-sale">{error}</div>;
+  if (items.length === 0) return <div className="max-w-2xl mx-auto py-16 text-center text-on-surface/70">{emptyItemsMessage}</div>;
 
   return (
     <main className="max-w-3xl mx-auto py-16 px-4">
@@ -201,7 +142,7 @@ export default function CheckoutPage() {
       <section className="mb-8">
         <h2 className="text-lg font-semibold mb-4">주문 상품</h2>
         <div className="flex flex-col gap-4">
-          {itemsToOrder.map((item) => (
+          {items.map((item) => (
             <div key={item.itemId} className="flex gap-4 items-center border-b pb-4">
               <FallbackImage src={getProductImage(item.productId)} alt={item.name} width={60} height={60} className="rounded bg-surface-variant object-cover w-16 h-16" unoptimized />
               <div className="flex-1">
@@ -209,13 +150,13 @@ export default function CheckoutPage() {
                 <div className="text-on-surface/70 text-sm">
                   {item.price.amount.toLocaleString()}원 × {item.quantity}개
                 </div>
-                {!isBuyNowMode && (
+                {canEditQuantity && (
                   <div className="mt-2 flex items-center gap-2">
                     <button
                       type="button"
                       className="w-8 h-8 rounded border border-outline disabled:opacity-50"
-                      disabled={item.quantity <= 1 || quantityMutation.isPending}
-                      onClick={() => quantityMutation.mutate({ itemId: item.itemId, quantity: item.quantity - 1 })}
+                      disabled={item.quantity <= 1 || isQuantityPending}
+                      onClick={() => updateQuantity(item.itemId, item.quantity - 1)}
                     >
                       -
                     </button>
@@ -223,8 +164,8 @@ export default function CheckoutPage() {
                     <button
                       type="button"
                       className="w-8 h-8 rounded border border-outline disabled:opacity-50"
-                      disabled={item.quantity >= 99 || quantityMutation.isPending}
-                      onClick={() => quantityMutation.mutate({ itemId: item.itemId, quantity: item.quantity + 1 })}
+                      disabled={item.quantity >= 99 || isQuantityPending}
+                      onClick={() => updateQuantity(item.itemId, item.quantity + 1)}
                     >
                       +
                     </button>
@@ -235,7 +176,7 @@ export default function CheckoutPage() {
             </div>
           ))}
         </div>
-        {quantityMutation.isError && <div className="mt-3 text-sm text-sale">{quantityMutation.error.message}</div>}
+        {quantityError && <div className="mt-3 text-sm text-sale">{quantityError}</div>}
         <div className="flex justify-end mt-4">
           <div className="text-xl font-bold text-on-surface">총 합계: {subtotalAmount.toLocaleString()}원</div>
         </div>
