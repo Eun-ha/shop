@@ -57,6 +57,21 @@ export function useCheckoutSource() {
     },
   });
 
+  const buyNowQuantityMutation = useMutation({
+    mutationFn: async ({ quantity }: { quantity: number }) => {
+      const res = await fetch(`${API_BASE_URL}/api/buy-now/${encodeURIComponent(intentId)}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ quantity }),
+      });
+      if (!res.ok) throw new Error(await parseApiErrorMessage(res, "수량 변경에 실패했습니다."));
+      return (await res.json()) as { intentId: string; item: CartItem };
+    },
+    onSuccess: (data) => {
+      queryClient.setQueryData(["checkout-buy-now", intentId, isAuthenticated], { item: data.item });
+    },
+  });
+
   const items = useMemo<CartItem[]>(() => {
     if (isBuyNow) return buyNowQuery.data?.item ? [buyNowQuery.data.item] : [];
     return cartQuery.data?.items ?? [];
@@ -74,10 +89,12 @@ export function useCheckoutSource() {
     invalidStateMessage,
     emptyItemsMessage,
     isAuthenticated,
-    // quantity editing (cart only)
-    canEditQuantity: !isBuyNow,
-    updateQuantity: (itemId: string, quantity: number) => quantityMutation.mutate({ itemId, quantity }),
-    isQuantityPending: quantityMutation.isPending,
-    quantityError: quantityMutation.isError ? quantityMutation.error.message : null,
+    canEditQuantity: true,
+    updateQuantity: (itemId: string, quantity: number) =>
+      isBuyNow ? buyNowQuantityMutation.mutate({ quantity }) : quantityMutation.mutate({ itemId, quantity }),
+    isQuantityPending: isBuyNow ? buyNowQuantityMutation.isPending : quantityMutation.isPending,
+    quantityError: isBuyNow
+      ? (buyNowQuantityMutation.isError ? buyNowQuantityMutation.error.message : null)
+      : (quantityMutation.isError ? quantityMutation.error.message : null),
   };
 }
