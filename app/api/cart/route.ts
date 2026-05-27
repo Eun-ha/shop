@@ -41,7 +41,7 @@ export async function POST(req: Request) {
 
   const product = await prisma.product.findUnique({ where: { id: body.productId } });
   if (!product) return fail("PRODUCT_NOT_FOUND", "Product not found.", 404);
-  if (product.status !== "ACTIVE") return fail("OUT_OF_STOCK", "Product is not for sale.", 409);
+  if (product.status !== "ACTIVE") return fail("PRODUCT_UNAVAILABLE", "Product is not for sale.", 409);
 
   const qty = Math.max(1, Math.min(99, body.quantity));
   if (product.stock < qty) return fail("OUT_OF_STOCK", "Insufficient stock.", 409, { stock: product.stock });

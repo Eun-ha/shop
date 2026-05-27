@@ -60,5 +60,5 @@ export async function DELETE(req: Request, ctx: { params: Promise<{ id: string }
   if (!existing) return fail("PRODUCT_NOT_FOUND", "Product not found.", 404);
 
   await prisma.product.delete({ where: { id: params.id } });
-  return ok({ success: true });
+  return ok(toProductDto(existing));
 }
