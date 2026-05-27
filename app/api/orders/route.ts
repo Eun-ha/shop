@@ -62,7 +62,7 @@ export async function POST(req: Request) {
       }
 
       if (p.status !== "ACTIVE") {
-        return { order: null, error: fail("OUT_OF_STOCK", "Product is not for sale.", 409, { productId: it.productId }) };
+        return { order: null, error: fail("PRODUCT_UNAVAILABLE", "Product is not for sale.", 409, { productId: it.productId }) };
       }
 
       if (p.stock < it.quantity) {

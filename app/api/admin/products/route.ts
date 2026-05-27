@@ -1,4 +1,4 @@
-import { created, fail, parseJson } from "@/lib/http";
+import { ok, created, fail, parseJson } from "@/lib/http";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { toProductDto, type Product, type ProductStatus } from "@/lib/product";
@@ -11,7 +11,7 @@ export async function GET(req: Request) {
   if (auth.role !== "ADMIN") return fail("FORBIDDEN", "Forbidden", 403);
 
   const items = await prisma.product.findMany({ orderBy: { createdAt: "desc" } });
-  return Response.json({ items: items.map(toProductDto) });
+  return ok({ items: items.map(toProductDto) });
 }
 
 export async function POST(req: Request) {
